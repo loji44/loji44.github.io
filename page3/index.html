@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="">
+    <meta name="keywords"  content="PandaQ, PandaQ Blog, 博客, 个人网站, 互联网, Web, JavaScript, Java">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="PandaQ | PandaQ Blog">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="I hear and I forget. I see and I remember. I do and I understand.">
+    
+    <meta property="og:image" content="http://pandaq.xyz/assets/images/avatar1.jpeg">
+    <meta property="og:url" content="http://pandaq.xyz/page3/">
+    <meta property="og:site_name" content="PandaQ | PandaQ Blog">
+    
+    <title>PandaQ | PandaQ Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://pandaq.xyz/page3/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">PandaQ Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">Archive</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Page Header -->
+
+
+
+
+
+
+
+<header class="intro-header" style="background-image: url('/assets/images/tag-bg.jpg')">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        
+        <div class="site-heading">
+        
+          <h1>PandaQ Blog</h1>
+          <span class="subheading">I hear and I forget. I see and I remember. I do and I understand.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- PostList Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                postlist-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/2019/12/27/java-strategy-pattern/">
+        <h2 class="post-title">
+            设计模式系列(1)：策略模式
+        </h2>
+        
+        <h3 class="post-subtitle">
+            策略模式在Java中的应用
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                策略模式就是定义一系列算法，并将每个算法封装起来，使它们可以相互替换，且算法的变化不会影响使用算法的客户。策略模式属于对象行为模式，它通过对算法进行封装，把使用算法的责任和算法的实现分割开来，并委派给不同的对象对这些算法进行管理。
+
+策略模式可以优化代码中出现很多if...else，提升代码的封装性以及可维护性；而且恰当地使用继承可以把算法族的公共代码转移到父类里面，从而避免重复的代码。
+
+...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on December 27, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/12/27/linux-search-file/">
+        <h2 class="post-title">
+            Linux查找文件的命令
+        </h2>
+        
+        <h3 class="post-subtitle">
+            如何在Linux查找某个文件？
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                日常开发中经常会用到Linux查找某个文件的命令，这里记录一下自己常用的几个。参考鸟哥的Linux学习网站：鳥哥的 Linux 私房菜。
+
+1. find
+
+Linux下最常见、最强大的文件查找命令算是find命令了。find命令直接搜索磁盘目录，虽然遍历磁盘目录效率低，但是却可以找到你想找的任何文件。
+
+1
+2
+3
+4
+5
+find [PATH] [option] [action]
+
+PA...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on December 27, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/12/15/sso-cas/">
+        <h2 class="post-title">
+            CAS单点登录技术（一）
+        </h2>
+        
+        <h3 class="post-subtitle">
+            了解单点登录的原理
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                一、SSO 和CAS
+
+
+  在企业应用开发中，经常会使用到单点登录技术（Single Sign-on）来处理企业的各个应用之间的共享登录场景。
+
+
+通常，企业内部会有多个应用，每个应用都需要用户登录之后才能允许用户访问其内容。现实中，一般不会为每个应用都实现一套登录逻辑，因为这样做既费时、费力又难以维护。而是通过一个统一登录服务，让每个应用都接入这个统一登录服务，这个登录服务可以在各个应用...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on December 15, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/12/14/dubbo-spi/">
+        <h2 class="post-title">
+            Dubbo SPI机制
+        </h2>
+        
+        <h3 class="post-subtitle">
+            我也来了解一下Dubbo的SPI机制
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                
+  关于Java SPI机制，之前写过一篇：Java SPI机制，后来了解到Dubbo也实现了一套SPI机制，而不是直接使用Java的SPI。学习了Dubbo SPI源码之后，写下这篇文章，很多东西直接借鉴原文，但是目的为了巩固所学，加深理解。
+
+
+一、Dubbo SPI的使用
+
+与Java SPI相似，Dubbo也是通过特定的目录去加载SPI扩展类，只不过两者加载扩展类的目录不同：Jav...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on December 14, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/12/14/dubbo-telnet-invoke-fastjson-error/">
+        <h2 class="post-title">
+            Dubbo telnet：invoke缺少fastjson惹的祸
+        </h2>
+        
+        <h3 class="post-subtitle">
+            Dubbo与fastjson的「矫情」关系
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                在使用 Dubbo 的telnet invoke命令测试 Dubbo 接口时，telnet控制台返回了一个错误：Invalid json argument, cause: com/alibaba/fastjson/JSON。
+
+从错误信息看，好像跟 fastjson 有点关系。于是就看了一下 Dubbo 处理 invoke 命令的处理器Handler源码：
+
+1
+2
+3
+4
+5
+6
+7
+8
+...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on December 14, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/12/12/order-by-limit/">
+        <h2 class="post-title">
+            MySQL分页+排序数据重复的问题
+        </h2>
+        
+        <h3 class="post-subtitle">
+            mysql分页查询数据重复问题记录
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                
+  最近工作中遇到一个使用MySQL分页+排序时，MySQL返回数据重复的问题。虽然以现在的水平还不知道具体原因，但是还是先要记录一下问题以及解决方案。待以后技术水平达到一定水准或者找到原因再回来更新这篇文章。
+
+
+一、问题描述
+
+
+  前提条件：使用的数据库版本为 MySQL 5.7
+
+
+有一张数据表：业务线数据表 business_line 的内容如下：
+
+1
+2
+3
+4
+5
+6
+7
+...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ Blog on December 12, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/12/10/telnet-command/">
+        <h2 class="post-title">
+            使用telnet命令来进行Dubbo接口测试
+        </h2>
+        
+        <h3 class="post-subtitle">
+            如何使用telnet调试Dubbo接口，学习一下
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                
+  从 2.0.5 版本开始，Dubbo 开始支持通过 telnet 命令来进行服务治理。
+
+
+使用telnet命令来直接连接到Dubbo的服务提供者，从而直接在命令行控制台使用 Dubbo 提供的指令来进行服务治理，例如调用 Dubbo 接口、查看服务者状态以及服务者提供的接口等信息。
+
+1
+2
+3
+4
+5
+6
+$ telnet localhost 20880
+Trying ::1......
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on December 10, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/10/12/java-spi/">
+        <h2 class="post-title">
+            Java SPI机制
+        </h2>
+        
+        <h3 class="post-subtitle">
+            揭开Java SPI的神秘面纱
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                一、SPI机制介绍与使用
+
+Java SPI是Java用于构建具备可扩展性的应用的一种机制。所谓的具备可扩展性，就是可以通过某种方式让使用者在不更改这个应用源代码的基础上去在这个应用上添加新的功能特性。
+
+先看看三个概念：
+
+
+  Service：就是具备可扩展性的应用服务，可扩展的对外接口就是由它定义；
+  Service provider interface (SPI)：Service定...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on October 12, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/10/10/java-proxy/">
+        <h2 class="post-title">
+            JDK静态代理和动态代理
+        </h2>
+        
+        <h3 class="post-subtitle">
+            Java代理复习&备忘录
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                一、为什么要使用代理
+
+代理对象可以对目标对象的间接访问，即通过代理访问目标对象。这样就可以在不修改（不入侵）目标实现的基础上对目标对象的功能进行增强，例如在在目标对象的方法前后加上额外的功能代码。
+
+二、JDK静态代理
+
+例如有一个售票处的接口：包含售票方法（sellTicket）和退票方法（refundTicket）
+
+1
+2
+3
+4
+public interface TicketOff...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on October 10, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/09/28/java-threadlocalrandom/">
+        <h2 class="post-title">
+            Java ThreadLocalRandom
+        </h2>
+        
+        <h3 class="post-subtitle">
+            Java中使用随机数生成类的笔记
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                在日常开发中，经常会遇到需要生成随机数的情况。一般我都是直接使用java.util.Random类直接生成，因为Random类是线程安全的，完全可以在多个线程间共享它的实例。我一直都是这样用的，好像并没有觉得有什么不妥。
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+public final class RandomUtils {
+    private final Random random = ...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by PandaQ on September 28, 2019
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    <li class="previous">
+        <a href="/page2">&larr; 最近</a>
+    </li>
+    
+    
+    <li class="next">
+        <a href="/page4">更早 &rarr;</a>
+    </li>
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+        
+                <a data-sort="0022" 
+                    href="/archive/?tag=Java"
+                    title="Java"
+                    rel="14">Java</a>
+        
+                <a data-sort="0030" 
+                    href="/archive/?tag=Linux"
+                    title="Linux"
+                    rel="6">Linux</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=%E5%B7%A5%E5%85%B7%E9%9B%86"
+                    title="工具集"
+                    rel="4">工具集</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=Dubbo"
+                    title="Dubbo"
+                    rel="4">Dubbo</a>
+        
+                <a data-sort="0033" 
+                    href="/archive/?tag=%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"
+                    title="设计模式"
+                    rel="3">设计模式</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Maven"
+                    title="Maven"
+                    rel="2">Maven</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=MySQL"
+                    title="MySQL"
+                    rel="2">MySQL</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Redis"
+                    title="Redis"
+                    rel="2">Redis</a>
+    </div>
+</section>
+
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+  <hr>
+  <h5><a href="/about/">ABOUT ME</a></h5>
+  <div class="short-about">
+    
+    <img src="/assets/images/avatar1.jpeg" />
+    
+    
+    <p>走<br>世界那么大，我想来看看</p>
+    
+    <!-- SNS Link -->
+    
+
+
+<ul class="list-inline">
+
+
+  
+  
+  
+  
+  
+  
+  
+</ul>
+  </div>
+</section>
+
+                <!-- Friends Blog -->
+                
+    		</div>
+        
+	</div>
+</div>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; PandaQ Blog 2021
+                    <br>
+                    Powered by <a href="https://jekyllrb.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/Huxpro/huxpro.github.io" target="_blank">Hux Blog</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("/js/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="/img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

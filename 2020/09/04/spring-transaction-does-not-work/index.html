@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="">
+    <meta name="keywords"  content="PandaQ, PandaQ Blog, 博客, 个人网站, 互联网, Web, JavaScript, Java">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Spring事务失效的原因 - PandaQ | PandaQ Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="最近在Review业务方的代码时发现使用了Spring事务：createDefaultSob方法中调用了save方法
+">
+    
+    <meta property="article:published_time" content="2020-09-04T03:36:26Z">
+    
+    
+    <meta property="article:author" content="PandaQ">
+    
+    
+    <meta property="article:tag" content="Spring">
+    
+    
+    <meta property="og:image" content="http://pandaq.xyz/assets/images/avatar1.jpeg">
+    <meta property="og:url" content="http://pandaq.xyz/2020/09/04/spring-transaction-does-not-work/">
+    <meta property="og:site_name" content="PandaQ | PandaQ Blog">
+    
+    <title>Spring事务失效的原因 - PandaQ | PandaQ Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://pandaq.xyz/2020/09/04/spring-transaction-does-not-work/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">PandaQ Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">Archive</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/assets/images/tag-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/assets/images/tag-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=Spring" title="Spring">Spring</a>
+                        
+                    </div>
+                    <h1>Spring事务失效的原因</h1>
+                    
+                    <h2 class="subheading">Spring事务使用不当导致事务失效的问题分析</h2>
+                    <span class="meta">Posted by PandaQ on 2020-09-04</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<p>最近在Review业务方的代码时发现使用了Spring事务：createDefaultSob方法中调用了save方法</p>
+
+<p><img src="/assets/images/2020-09/spring-transaction-save-invoke.png" alt="spring-transaction-save-invoke.png" /></p>
+
+<p>save方法是一个事务方法，打了<code class="language-plaintext highlighter-rouge">@Transactional</code>注解：期望发生异常时自动回滚数据库</p>
+
+<p><img src="/assets/images/2020-09/spring-transaction-save.png" alt="spring-transaction-save.png" /></p>
+
+<p>先给出结论：在createDefaultSob方法中直接通过调用save方法的方式，会导致save方法的事务不生效，发生异常时也不会回滚。这种事务方法的调用方式是错误的。</p>
+
+<h5 id="为什么事务会失效">为什么事务会失效？</h5>
+
+<p>我们知道，Spring事务本质就是通过动态代理给我们的事务方法织入异常处理的逻辑，并在发生异常时执行ROLLBACK回滚数据库状态。例如我们有个OrderService接口：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">OrderService</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">createOrder</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderServiceImpl</span> <span class="kd">implements</span> <span class="nc">OrderService</span> <span class="o">{</span>
+    <span class="nd">@Transactional</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createOrder</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 创建订单逻辑：涉及到好几个DB操作</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>通常，Spring在启动的时候扫描到<code class="language-plaintext highlighter-rouge">@Service</code>注解，会为类创建实例对象并加入到IoC容器中。但是由于Spring扫描到OrderServiceImpl的createOrder方法上有<code class="language-plaintext highlighter-rouge">@Transactional</code>注解，于是Spring框架知道这是一个事务方法，所以会为OrderServiceImpl生成一个代理类来拦截OrderServiceImpl中的所有方法并将该代理类实例添加到IoC容器中。</p>
+
+<p>所以我们在<code class="language-plaintext highlighter-rouge">@Autowired</code>这个OrderService的时候，实际上拿到的是OrderServiceImpl的代理类的实例，而不是OrderServiceImpl类的实例：</p>
+
+<p><img src="/assets/images/2020-09/proxy-instance.png" alt="proxy-instance.png" /></p>
+
+<p>因为createOrder上有<code class="language-plaintext highlighter-rouge">@Transactional</code>注解，所以Spring在代理类中对这个方法进行了增强：在反射调用invoke进行try…catch，并在catch到异常的时候进行数据库ROLLBACK操作。</p>
+
+<p>所以Spring事务的是否生效，取决于我们是否是通过「代理类的对象实例」来进行方法的调用。例如最上面提到的例子，直接在createDefaultSob方法中调用了save这个事务方法，这种调用方式是不会走代理调用的，所以事务也根本不会生效。我们应该通过<code class="language-plaintext highlighter-rouge">xxxService.method</code>这种调用方式，才能使事务生效：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderServiceImpl</span> <span class="kd">implements</span> <span class="nc">OrderService</span> <span class="o">{</span>
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">OrderService</span> <span class="n">orderService</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">create</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">orderService</span><span class="o">.</span><span class="na">createOrder</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Transactional</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createOrder</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 创建订单逻辑：涉及到好几个DB操作</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>因为<code class="language-plaintext highlighter-rouge">@Autowired private OrderService orderService;</code>注入的是代理类对象，所以在使用<code class="language-plaintext highlighter-rouge">orderService.createOrder()</code>调用时能正确走到事务的逻辑。</p>
+
+<p>除了<code class="language-plaintext highlighter-rouge">xxxService.method</code>这种调用方式，我们也可以通过<code class="language-plaintext highlighter-rouge">@EnableAspectJAutoProxy</code>注解，将代理类暴露到ThreadLocal中，然后通过<code class="language-plaintext highlighter-rouge">AopContext.currentProxy()</code>来获取当前类的代理对象：</p>
+
+<p><img src="/assets/images/2020-09/enableAspectJAutoProxy.png" alt="enableAspectJAutoProxy.png" />
+<img src="/assets/images/2020-09/aop-context.png" alt="aop-context.png" /></p>
+
+<p><strong>但是注意，<code class="language-plaintext highlighter-rouge">@EnableAspectJAutoProxy(exposeProxy = true)</code>不能保证一定能够正确工作：</strong></p>
+
+<p><img src="/assets/images/2020-09/EnableAspectJAutoProxy-exposeProxy.png" alt="EnableAspectJAutoProxy-exposeProxy.png" /></p>
+
+<p>如果直接调用<code class="language-plaintext highlighter-rouge">createOrder()</code>就没有走代理，直接走的普通方法调用：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderServiceImpl</span> <span class="kd">implements</span> <span class="nc">OrderService</span> <span class="o">{</span>
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">OrderService</span> <span class="n">orderService</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">create</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">createOrder</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Transactional</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createOrder</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 创建订单逻辑：涉及到好几个DB操作</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>这样一来，Spring的事务就失效了。以上是Spring事务失效的其中一种情况的分析。我们在使用Spring事务的时候，想要使Spring事务正常工作，可能还需要注意以下几点：</p>
+
+<ul>
+  <li>包含<code class="language-plaintext highlighter-rouge">@Transactional</code>注解的类必须要被Spring IoC容器管理，否则Spring没法扫描到该Bean为其生成代理类；</li>
+  <li>要为数据源配置「事务管理器」：PlatformTransactionManager；</li>
+  <li>要确保我们的数据库操作的表是支持事务的，例如InnoDB支持事务，而MyISAM的数据表就不支持事务；</li>
+  <li>方法的异常不能自己try…catch消化掉，否则Spring事务没法感知到你的方法抛了异常，也就不会回滚；</li>
+  <li>事务的rollbackFor异常类型配置错误，例如配置rollbackFor=SQLException.class，但是你在方法中却抛出BuzzException.class异常，异常类型不匹配也无法让Spring事务感知到；</li>
+  <li>Spring事务传播机制要配置正确，例如：</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="rouge-code"><pre><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Test</span> <span class="o">{</span>
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">Test</span> <span class="n">test</span><span class="o">;</span>
+
+    <span class="nd">@Transactional</span><span class="o">(</span><span class="n">propagation</span> <span class="o">=</span> <span class="nc">Propagation</span><span class="o">.</span><span class="na">REQUIRED</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">method1</span><span class="o">()</span> <span class="o">{</span>
+        <span class="cm">/** 业务操作 ... */</span>
+        <span class="n">test</span><span class="o">.</span><span class="na">method2</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Transactional</span><span class="o">(</span><span class="n">propagation</span> <span class="o">=</span> <span class="nc">Propagation</span><span class="o">.</span><span class="na">NOT_SUPPORTED</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">method2</span><span class="o">()</span> <span class="o">{</span>
+        <span class="cm">/** 数据库操作 ... */</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>method2()的事务传播机制是<code class="language-plaintext highlighter-rouge">Propagation.NOT_SUPPORTED</code>，即不支持事务。如果当前存在事务，它会挂起当前事务，并以非事务的方式执行method2()。执行完method2再恢复method1的事务。在这个例子中，method2()就不会以事务方式执行，发生异常也不会回滚method2()中涉及到的数据库操作。</p>
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2020/07/30/redis-caching-problems/" data-toggle="tooltip" data-placement="top" title="Redis缓存雪崩、穿透、击穿">
+                        Previous<br>
+                        <span>Redis缓存雪崩、穿透、击穿</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2020/10/22/flatData-transfer-treeData/" data-toggle="tooltip" data-placement="top" title="将扁平列表数据转换成树状列表结构数据">
+                        Next<br>
+                        <span>将扁平列表数据转换成树状列表结构数据</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+        
+                <a data-sort="0022" 
+                    href="/archive/?tag=Java"
+                    title="Java"
+                    rel="14">Java</a>
+        
+                <a data-sort="0030" 
+                    href="/archive/?tag=Linux"
+                    title="Linux"
+                    rel="6">Linux</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=%E5%B7%A5%E5%85%B7%E9%9B%86"
+                    title="工具集"
+                    rel="4">工具集</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=Dubbo"
+                    title="Dubbo"
+                    rel="4">Dubbo</a>
+        
+                <a data-sort="0033" 
+                    href="/archive/?tag=%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"
+                    title="设计模式"
+                    rel="3">设计模式</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Maven"
+                    title="Maven"
+                    rel="2">Maven</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=MySQL"
+                    title="MySQL"
+                    rel="2">MySQL</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Redis"
+                    title="Redis"
+                    rel="2">Redis</a>
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("/js/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'right',
+          // icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; PandaQ Blog 2021
+                    <br>
+                    Powered by <a href="https://jekyllrb.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/Huxpro/huxpro.github.io" target="_blank">Hux Blog</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("/js/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="/img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

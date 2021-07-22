@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="">
+    <meta name="keywords"  content="PandaQ, PandaQ Blog, 博客, 个人网站, 互联网, Web, JavaScript, Java">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="SSH config - PandaQ | PandaQ Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="SSH的配置文件有两个，一个是系统配置，一个是用户配置文件。
+">
+    
+    <meta property="article:published_time" content="2020-07-27T08:27:45Z">
+    
+    
+    <meta property="article:author" content="PandaQ">
+    
+    
+    <meta property="article:tag" content="Linux">
+    
+    <meta property="article:tag" content="git">
+    
+    <meta property="article:tag" content="SSH">
+    
+    
+    <meta property="og:image" content="http://pandaq.xyz/assets/images/avatar1.jpeg">
+    <meta property="og:url" content="http://pandaq.xyz/2020/07/27/ssh-config/">
+    <meta property="og:site_name" content="PandaQ | PandaQ Blog">
+    
+    <title>SSH config - PandaQ | PandaQ Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://pandaq.xyz/2020/07/27/ssh-config/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">PandaQ Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">Archive</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/assets/images/tag-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/assets/images/tag-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=Linux" title="Linux">Linux</a>
+                        
+                        <a class="tag" href="/archive/?tag=git" title="git">git</a>
+                        
+                        <a class="tag" href="/archive/?tag=SSH" title="SSH">SSH</a>
+                        
+                    </div>
+                    <h1>SSH config</h1>
+                    
+                    <h2 class="subheading">ssh config相关配置学习&记录</h2>
+                    <span class="meta">Posted by PandaQ on 2020-07-27</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<p>SSH的配置文件有两个，一个是系统配置，一个是用户配置文件。</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">/etc/ssh/ssh_config</code>：SSH的系统配置文件；</li>
+  <li><code class="language-plaintext highlighter-rouge">~/.ssh/config</code>：用户的SSH配置文件</li>
+</ul>
+
+<p>我们可以直接在用户主目录的<code class="language-plaintext highlighter-rouge">.ssh</code>目录下创建一个名叫<code class="language-plaintext highlighter-rouge">config</code>的文件来配置自己的一些SSH相关配置，以简化我们日常的一些SSH操作。下面根据场景来说明。</p>
+
+<h3 id="1-ssh别名登录远程服务器">1. SSH别名登录远程服务器</h3>
+
+<p>SSH登录远程服务器，但是如果每次都需要输入账号、远程服务器域名（或者IP）会很麻烦，例如：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="nv">$ </span>ssh appweb@192.168.100.4
+<span class="nv">$ </span>ssh root@my.aliyun.ecs
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>使用SSH config我们可以给我们的远程服务器取一个有意义、易识别的别名，例如：<code class="language-plaintext highlighter-rouge">ssh myaliyun</code>表示登录我自己的阿里云机器；<code class="language-plaintext highlighter-rouge">ssh gongsi</code>表示登录公司的跳板机。那么，要怎么配置呢？</p>
+
+<p>方法是：在<code class="language-plaintext highlighter-rouge">.ssh</code>目录下创建一个<code class="language-plaintext highlighter-rouge">config</code>文件，编辑内容如下：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre>Host myaliyun
+  HostName 192.168.100.1
+  User root
+  IdentityFile ~/.ssh/id_rsa
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>以上用到的就是SSH的配置项（这里只用到了比较常用的配置项），说明如下：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre><span class="c"># 配置文件参数</span>
+<span class="c"># Host : 远程服务器别名，写一个易识别的名字</span>
+<span class="c"># HostName : 远程服务器的域名或者IP地址</span>
+<span class="c"># User : SSH登录用户名，例如root</span>
+<span class="c"># IdentityFile : SSH登录服务器的私钥文件路径，例如~/.ssh/id_rsa</span>
+<span class="c"># Port: SSH端口号，不配置默认22</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>配置完毕之后，就可以直接使用<code class="language-plaintext highlighter-rouge">ssh myaliyun</code>登录我的阿里云主机，比较方便。</p>
+
+<h3 id="2-ssh管理多组密钥对">2. SSH管理多组密钥对</h3>
+
+<p>我们本地电脑可能会存在多组SSH密钥对，例如：</p>
+
+<ul>
+  <li>公司的GitLab代码仓库：<code class="language-plaintext highlighter-rouge">id_rsa_gitlab/id_rsa_gitlab.pub</code></li>
+  <li>个人的GitHub代码仓库：<code class="language-plaintext highlighter-rouge">id_rsa_github/id_rsa_github.pub</code></li>
+</ul>
+
+<p>我们在<code class="language-plaintext highlighter-rouge">git clone</code>或者<code class="language-plaintext highlighter-rouge">git push</code>的时候都需要手动切换使用的密钥，比较麻烦。通过SSH config配置，我们可以让SSH根据我们的配置帮我们自动选择对应的密钥。配置如下：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre><span class="c"># 公司GitLab仓库SSH配置</span>
+Host gongsi.gitlab.com
+  HostName gongsi.gitlab.com
+  IdentityFile ~/.ssh/id_rsa_gitlab
+  User yansong
+
+<span class="c"># 个人GitHub仓库SSH配置</span>
+Host github.com
+  HostName github.com
+  IdentityFile ~/.ssh/id_rsa_github
+  User pandaq
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>配置完毕后，就可以直接执行<code class="language-plaintext highlighter-rouge">git clone git@github.com:LUZHO211/luzblog.git</code>来clone我的GitHub项目，而不用担心我本地存在多组密钥对而导致失败的情况了。SSH会自动选择对应的密钥。</p>
+
+<p>如果本地存在多组SSH密钥对，可能需要通过<code class="language-plaintext highlighter-rouge">ssh-add</code>命令事先将这些密钥添加到ssh-agent中：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="nv">$ </span>ssh-add ~/.ssh/id_rsa_gitlab
+<span class="nv">$ </span>ssh-add ~/.ssh/id_rsa_github
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h5 id="参考文章">参考文章</h5>
+
+<ol>
+  <li><a href="https://deepzz.com/post/how-to-setup-ssh-config.html" target="_blank">https://deepzz.com/post/how-to-setup-ssh-config.html</a></li>
+  <li><a href="https://man.linuxde.net/ssh-agent" target="_blank">https://man.linuxde.net/ssh-agent</a></li>
+</ol>
+
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2020/07/27/arthas-run-without-network/" data-toggle="tooltip" data-placement="top" title="无网络环境下使用阿里arthas诊断工具">
+                        Previous<br>
+                        <span>无网络环境下使用阿里arthas诊断工具</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2020/07/30/redis-caching-problems/" data-toggle="tooltip" data-placement="top" title="Redis缓存雪崩、穿透、击穿">
+                        Next<br>
+                        <span>Redis缓存雪崩、穿透、击穿</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+        
+                <a data-sort="0022" 
+                    href="/archive/?tag=Java"
+                    title="Java"
+                    rel="14">Java</a>
+        
+                <a data-sort="0030" 
+                    href="/archive/?tag=Linux"
+                    title="Linux"
+                    rel="6">Linux</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=%E5%B7%A5%E5%85%B7%E9%9B%86"
+                    title="工具集"
+                    rel="4">工具集</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=Dubbo"
+                    title="Dubbo"
+                    rel="4">Dubbo</a>
+        
+                <a data-sort="0033" 
+                    href="/archive/?tag=%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"
+                    title="设计模式"
+                    rel="3">设计模式</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Maven"
+                    title="Maven"
+                    rel="2">Maven</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=MySQL"
+                    title="MySQL"
+                    rel="2">MySQL</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Redis"
+                    title="Redis"
+                    rel="2">Redis</a>
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("/js/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'right',
+          // icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; PandaQ Blog 2021
+                    <br>
+                    Powered by <a href="https://jekyllrb.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/Huxpro/huxpro.github.io" target="_blank">Hux Blog</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("/js/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="/img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

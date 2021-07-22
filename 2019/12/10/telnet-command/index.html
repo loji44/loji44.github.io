@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="">
+    <meta name="keywords"  content="PandaQ, PandaQ Blog, 博客, 个人网站, 互联网, Web, JavaScript, Java">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="使用telnet命令来进行Dubbo接口测试 - PandaQ | PandaQ Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="
+  从 2.0.5 版本开始，Dubbo 开始支持通过 telnet 命令来进行服务治理。
+
+">
+    
+    <meta property="article:published_time" content="2019-12-10T15:29:00Z">
+    
+    
+    <meta property="article:author" content="PandaQ">
+    
+    
+    <meta property="article:tag" content="Dubbo">
+    
+    
+    <meta property="og:image" content="http://pandaq.xyz/assets/images/avatar1.jpeg">
+    <meta property="og:url" content="http://pandaq.xyz/2019/12/10/telnet-command/">
+    <meta property="og:site_name" content="PandaQ | PandaQ Blog">
+    
+    <title>使用telnet命令来进行Dubbo接口测试 - PandaQ | PandaQ Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://pandaq.xyz/2019/12/10/telnet-command/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">PandaQ Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">Archive</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/assets/images/tag-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/assets/images/tag-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=Dubbo" title="Dubbo">Dubbo</a>
+                        
+                    </div>
+                    <h1>使用telnet命令来进行Dubbo接口测试</h1>
+                    
+                    <h2 class="subheading">如何使用telnet调试Dubbo接口，学习一下</h2>
+                    <span class="meta">Posted by PandaQ on 2019-12-10</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<blockquote>
+  <p>从 <code class="language-plaintext highlighter-rouge">2.0.5</code> 版本开始，Dubbo 开始支持通过 telnet 命令来进行服务治理。</p>
+</blockquote>
+
+<p>使用telnet命令来直接连接到Dubbo的服务提供者，从而直接在命令行控制台使用 Dubbo 提供的指令来进行服务治理，例如调用 Dubbo 接口、查看服务者状态以及服务者提供的接口等信息。</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre><span class="nv">$ </span>telnet localhost 20880
+Trying ::1...
+Connected to localhost.
+Escape character is <span class="s1">'^]'</span><span class="nb">.</span>
+
+dubbo&gt;
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>telnet连接上Dubbo服务提供者后，可以通过Dubbo内建的telnet命令来跟Dubbo服务提供者交互。</p>
+
+<h3 id="1-ls-命令">1. <code class="language-plaintext highlighter-rouge">ls</code> 命令</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">ls</code> —— 列出 Dubbo 服务提供者提供的接口列表；</li>
+  <li><code class="language-plaintext highlighter-rouge">ls -l</code> —— 列出 Dubbo 服务提供者提供的接口详细信息列表；</li>
+  <li><code class="language-plaintext highlighter-rouge">ls xxxService</code> —— 列出某个 Dubbo 接口提供的方法列表；</li>
+  <li><code class="language-plaintext highlighter-rouge">ls -l xxxService</code> —— 列出某个 Dubbo 接口提供的方法详情列表。</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">ls</code>查看提供了哪些接口</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre>dubbo&gt;ls
+com.pandaq.dubbo.ComputerService
+com.pandaq.dubbo.CameraService
+com.pandaq.dubbo.PrinterService
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">ls -l</code> 查看接口详细信息</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre>dubbo&gt;ls <span class="nt">-l</span>
+com.pandaq.dubbo.ComputerService -&gt; dubbo://192.168.1.101:20880/com.pandaq.dubbo.ComputerService?anyhost<span class="o">=</span><span class="nb">true</span>&amp;application<span class="o">=</span>dubbo-telnet-service&amp;bind.ip<span class="o">=</span>192.168.1.101&amp;bind.port<span class="o">=</span>20880&amp;dubbo<span class="o">=</span>2.6.2&amp;generic<span class="o">=</span><span class="nb">false</span>&amp;interface<span class="o">=</span>com.pandaq.dubbo.ComputerService&amp;methods<span class="o">=</span>getComputerType,restart&amp;pid<span class="o">=</span>33024&amp;side<span class="o">=</span>provider&amp;timestamp<span class="o">=</span>1576075027350
+com.pandaq.dubbo.CameraService -&gt; dubbo://192.168.1.101:20880/com.pandaq.dubbo.CameraService?anyhost<span class="o">=</span><span class="nb">true</span>&amp;application<span class="o">=</span>dubbo-telnet-service&amp;bind.ip<span class="o">=</span>192.168.1.101&amp;bind.port<span class="o">=</span>20880&amp;dubbo<span class="o">=</span>2.6.2&amp;generic<span class="o">=</span><span class="nb">false</span>&amp;interface<span class="o">=</span>com.pandaq.dubbo.CameraService&amp;methods<span class="o">=</span>getCameraVendorName,getCameraColor&amp;pid<span class="o">=</span>33024&amp;side<span class="o">=</span>provider&amp;timestamp<span class="o">=</span>1576075022280
+com.pandaq.dubbo.PrinterService -&gt; dubbo://192.168.1.101:20880/com.pandaq.dubbo.PrinterService?anyhost<span class="o">=</span><span class="nb">true</span>&amp;application<span class="o">=</span>dubbo-telnet-service&amp;bind.ip<span class="o">=</span>192.168.1.101&amp;bind.port<span class="o">=</span>20880&amp;dubbo<span class="o">=</span>2.6.2&amp;generic<span class="o">=</span><span class="nb">false</span>&amp;interface<span class="o">=</span>com.pandaq.dubbo.PrinterService&amp;methods<span class="o">=</span>getPrinterVendorName,printText&amp;pid<span class="o">=</span>33024&amp;side<span class="o">=</span>provider&amp;timestamp<span class="o">=</span>1576075006858
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">ls xxxService</code> 查看某个 Dubbo 接口提供的方法</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre>dubbo&gt;ls com.pandaq.dubbo.PrinterService
+getPrinterVendorName
+printText
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<blockquote>
+  <p>也可以直接 <code class="language-plaintext highlighter-rouge">ls PrinterService</code>，省去接口的全限定名。</p>
+</blockquote>
+
+<p><code class="language-plaintext highlighter-rouge">ls -l xxxService</code> 查看提供的方法的详情：方法的参数、返回值类型</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre>dubbo&gt;ls <span class="nt">-l</span> PrinterService
+java.lang.String getPrinterVendorName<span class="o">()</span>
+void printText<span class="o">(</span>java.lang.String<span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="2-ps-命令">2. <code class="language-plaintext highlighter-rouge">ps</code> 命令</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">ps</code> —— 查看服务提供者的端口列表；</li>
+  <li><code class="language-plaintext highlighter-rouge">ps -l</code> —— 查看服务提供者的地址列表；</li>
+  <li><code class="language-plaintext highlighter-rouge">ps port</code> —— 查看服务提供者的端口上的连接信息（连接的客户端信息）；</li>
+  <li><code class="language-plaintext highlighter-rouge">ps -l port</code> —— 查看服务提供者的端口上的连接详细信息。</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre>dubbo&gt;ps
+20880
+
+dubbo&gt;ps <span class="nt">-l</span>
+dubbo://192.168.1.101:20880
+
+dubbo&gt;ps 20880
+/0:0:0:0:0:0:0:1:49358
+
+dubbo&gt;ps <span class="nt">-l</span> 20880
+/0:0:0:0:0:0:0:1:49358 -&gt; /0:0:0:0:0:0:0:1:20880
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="3-cdpwd-命令">3. <code class="language-plaintext highlighter-rouge">cd</code>、<code class="language-plaintext highlighter-rouge">pwd</code> 命令</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">cd xxxService</code> —— 改变缺省服务。设置缺省服务可以不用每次都输入全限定名来使用服务，方便操作；</li>
+  <li><code class="language-plaintext highlighter-rouge">cd /</code> —— 取消缺省服务，即不设置缺省服务；</li>
+  <li><code class="language-plaintext highlighter-rouge">pwd</code> —— 使用 <code class="language-plaintext highlighter-rouge">pwd</code> 可以查看当前设置的缺省服务。</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre>dubbo&gt;cd com.pandaq.dubbo.PrinterService
+Used the com.pandaq.dubbo.PrinterService as default.
+You can cancel default service by <span class="nb">command</span>: <span class="nb">cd</span> /
+
+dubbo&gt;pwd
+com.pandaq.dubbo.PrinterService
+
+dubbo&gt;cd /
+Cancelled default service com.pandaq.dubbo.PrinterService.
+
+dubbo&gt;pwd
+/
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="4-invoke-命令">4. <code class="language-plaintext highlighter-rouge">invoke</code> 命令</h3>
+
+<blockquote>
+  <p>invoke命令用来调用 Dubbo 方法进行接口测试。可以省去接口全限定名而直接调用方法名，但是如果不同的接口服务包含了同一个方法名，就需要全限定名或者 xxxService.method 方式来调用。当 invoke 时匹配到了多个方法，也可以使用 <code class="language-plaintext highlighter-rouge">select</code> 命令来选择要掉用的方法，例如：select 1</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre>dubbo&gt;invoke printText<span class="o">(</span><span class="s2">"Hello, World!"</span><span class="o">)</span>
+null
+elapsed: 0 ms.
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="5-count-命令统计服务调用情况">5. <code class="language-plaintext highlighter-rouge">count</code> 命令：统计服务调用情况</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">count xxxService 5</code> —— 统计某接口服务下的所有方法的调用情况：统计5次</li>
+  <li><code class="language-plaintext highlighter-rouge">count xxxService xxxMethod 5</code> —— 统计某接口服务下的某个方法的调用情况：统计5次</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="rouge-code"><pre>dubbo&gt;count com.pandaq.dubbo.PrinterService getPrinterVendorName 3
++----------------------+-------+--------+--------+---------+-----+
+| method               | total | failed | active | average | max |
++----------------------+-------+--------+--------+---------+-----+
+| getPrinterVendorName | 0     | 0      | 0      | 0ms     | 0ms |
++----------------------+-------+--------+--------+---------+-----+
+
++----------------------+-------+--------+--------+---------+-----+
+| method               | total | failed | active | average | max |
++----------------------+-------+--------+--------+---------+-----+
+| getPrinterVendorName | 0     | 0      | 0      | 0ms     | 0ms |
++----------------------+-------+--------+--------+---------+-----+
+
++----------------------+-------+--------+--------+---------+-----+
+| method               | total | failed | active | average | max |
++----------------------+-------+--------+--------+---------+-----+
+| getPrinterVendorName | 0     | 0      | 0      | 0ms     | 0ms |
++----------------------+-------+--------+--------+---------+-----+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="6-status-命令查看服务的汇总情况">6. <code class="language-plaintext highlighter-rouge">status</code> 命令：查看服务的汇总情况</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre>dubbo&gt;status <span class="nt">-l</span>
++------------+--------+--------------------------------------------------------+
+| resource   | status | message                                                |
++------------+--------+--------------------------------------------------------+
+| threadpool | OK     | Pool status:OK, max:200, core:200, largest:24, active:1, task:24, service port: 20880 |
+| load       | OK     | load:3.22021484375,cpu:4                               |
+| memory     | OK     | max:1820M,total:163M,used:60M,free:103M                |
+| registry   | OK     | 47.111.96.193:2281<span class="o">(</span>connected<span class="o">)</span>                          |
+| server     | OK     | /192.168.1.101:20880<span class="o">(</span>clients:1<span class="o">)</span>                        |
+| spring     | OK     |                                                        |
+| summary    | OK     |                                                        |
++------------+--------+--------------------------------------------------------+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<blockquote>
+  <p>以上所有状态均OK</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre>dubbo&gt;status <span class="nt">-l</span>
++------------+--------+--------------------------------------------------------+
+| resource   | status | message                                                |
++------------+--------+--------------------------------------------------------+
+| threadpool | OK     | Pool status:OK, max:200, core:200, largest:28, active:1, task:28, service port: 20880 |
+| load       | WARN   | load:7.51611328125,cpu:4                               |
+| memory     | OK     | max:1820M,total:163M,used:62M,free:101M                |
+| registry   | OK     | 47.111.96.193:2281<span class="o">(</span>connected<span class="o">)</span>                          |
+| server     | OK     | /192.168.1.101:20880<span class="o">(</span>clients:1<span class="o">)</span>                        |
+| spring     | OK     |                                                        |
+| summary    | WARN   | load                                                   |
++------------+--------+--------------------------------------------------------+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<blockquote>
+  <p>以上有些状态为警告WARN，例如上面的WARN显示的是cpu负载警告，可能是cpu负载有点高的原因。</p>
+</blockquote>
+
+<p><br /><br /></p>
+
+<p><em>参考文章</em></p>
+
+<p><em>1. <a href="http://dubbo.apache.org/zh-cn/docs/user/references/telnet.html">Telnet 命令参考手册</a></em> <br /></p>
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2019/10/12/java-spi/" data-toggle="tooltip" data-placement="top" title="Java SPI机制">
+                        Previous<br>
+                        <span>Java SPI机制</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2019/12/12/order-by-limit/" data-toggle="tooltip" data-placement="top" title="MySQL分页+排序数据重复的问题">
+                        Next<br>
+                        <span>MySQL分页+排序数据重复的问题</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+        
+                <a data-sort="0022" 
+                    href="/archive/?tag=Java"
+                    title="Java"
+                    rel="14">Java</a>
+        
+                <a data-sort="0030" 
+                    href="/archive/?tag=Linux"
+                    title="Linux"
+                    rel="6">Linux</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=%E5%B7%A5%E5%85%B7%E9%9B%86"
+                    title="工具集"
+                    rel="4">工具集</a>
+        
+                <a data-sort="0032" 
+                    href="/archive/?tag=Dubbo"
+                    title="Dubbo"
+                    rel="4">Dubbo</a>
+        
+                <a data-sort="0033" 
+                    href="/archive/?tag=%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"
+                    title="设计模式"
+                    rel="3">设计模式</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Maven"
+                    title="Maven"
+                    rel="2">Maven</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=MySQL"
+                    title="MySQL"
+                    rel="2">MySQL</a>
+        
+                <a data-sort="0034" 
+                    href="/archive/?tag=Redis"
+                    title="Redis"
+                    rel="2">Redis</a>
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("/js/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'right',
+          // icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; PandaQ Blog 2021
+                    <br>
+                    Powered by <a href="https://jekyllrb.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/Huxpro/huxpro.github.io" target="_blank">Hux Blog</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("/js/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="/img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
