@@ -3,27 +3,27 @@
 
     <title>Loji44's Blog Site.</title>
     <generator uri="https://github.com/jekyll/jekyll">Jekyll v4.0.1</generator>
-		<icon>http://emptymalei.github.io/planets-jekyll/apple-touch-icon-precomposed.png</icon>
+		<icon>https://loji44.github.io/apple-touch-icon-precomposed.png</icon>
     <subtitle>这是随手写的描述</subtitle>
-    <link href="http://emptymalei.github.io/planets-jekyll/atom.xml" rel="self"/>
-    <link href="http://emptymalei.github.io/planets-jekyll/" rel="alternate" type="text/html"/>
-    <updated>2021-07-23T16:11:17+08:00</updated>
-    <id>http://emptymalei.github.io/planets-jekyll/</id>
+    <link href="https://loji44.github.io/atom.xml" rel="self"/>
+    <link href="https://loji44.github.io/" rel="alternate" type="text/html"/>
+    <updated>2021-07-23T16:44:56+08:00</updated>
+    <id>https://loji44.github.io/</id>
     <author>
 			<name>jekyll 行星主题</name>
-			<uri>http://emptymalei.github.io/planets-jekyll/</uri>
+			<uri>https://loji44.github.io/</uri>
 			<email>example@example.com</email>
 		</author>
 
     
     <entry>
         <title>火星的日落</title>
-        <link href="http://emptymalei.github.io/planets-jekyll/stories/martian-sunset-phobos/"/>
+        <link href="https://loji44.github.io/stories/martian-sunset-phobos/"/>
         <updated>2014-10-18T00:00:00+08:00</updated>
-        <id>http://emptymalei.github.io/planets-jekyll/stories/martian-sunset-phobos</id>
+        <id>https://loji44.github.io/stories/martian-sunset-phobos</id>
         <author>
 					<name>jekyll 行星主题</name>
-					<uri>http://emptymalei.github.io/planets-jekyll/</uri>
+					<uri>https://loji44.github.io/</uri>
 					<email>example@example.com</email>
 				</author>
         <content type="html">
@@ -38,7 +38,7 @@
   &lt;figcaption&gt;
 火星蓝色的日落，火卫一 Phobos 正经过太阳前面。Credit: NASA/JPL-Caltech/Cornell/Texas A&amp;amp;M
 &lt;/figcaption&gt;
-  &lt;p&gt;&lt;img src=&quot;http://emptymalei.github.io/planets-jekyll/images/mars/blue_sun_phobos.jpg&quot; alt=&quot;蓝色日落&quot; /&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;img src=&quot;https://loji44.github.io/images/mars/blue_sun_phobos.jpg&quot; alt=&quot;蓝色日落&quot; /&gt;&lt;/p&gt;
 &lt;/figure&gt;
 
 &lt;p&gt;除了照片，还有一段古老的视频。&lt;/p&gt;
@@ -51,7 +51,7 @@
   &lt;figcaption&gt;
 更大的角度来看日落。&lt;a href=&quot;https://en.wikipedia.org/wiki/File:MarsSunset.jpg&quot;&gt;File:MarsSunset.jpg&lt;/a&gt;
 &lt;/figcaption&gt;
-  &lt;p&gt;&lt;img src=&quot;http://emptymalei.github.io/planets-jekyll/images/mars/998px-MarsSunset.jpg&quot; alt=&quot;蓝色日落&quot; /&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;img src=&quot;https://loji44.github.io/images/mars/998px-MarsSunset.jpg&quot; alt=&quot;蓝色日落&quot; /&gt;&lt;/p&gt;
 &lt;/figure&gt;
 
 &lt;p&gt;由于火星大气中颗粒的作用，火星的日落会出现不同的颜色，例如上面的蓝色。不同的天气状况会出现不同的日落，除了蓝太阳，也会有红色的日落。&lt;/p&gt;
@@ -64,7 +64,7 @@
   &lt;figcaption&gt;
 黄昏中的旅游景点开发站。&lt;a href=&quot;http://www.arcadiastreet.com/cgvistas/spacexp/se_mars_2500b.htm&quot;&gt;Walter Myers&lt;/a&gt;
 &lt;/figcaption&gt;
-  &lt;p&gt;&lt;img src=&quot;http://emptymalei.github.io/planets-jekyll/images/mars/mars_outpost_mesa_1280.jpg&quot; alt=&quot;蓝色日落&quot; /&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;img src=&quot;https://loji44.github.io/images/mars/mars_outpost_mesa_1280.jpg&quot; alt=&quot;蓝色日落&quot; /&gt;&lt;/p&gt;
 &lt;/figure&gt;
 
 
@@ -73,12 +73,12 @@
     
     <entry>
         <title>太阳系内行星的符号</title>
-        <link href="http://emptymalei.github.io/planets-jekyll/til/astrology-symbols/"/>
+        <link href="https://loji44.github.io/til/astrology-symbols/"/>
         <updated>2014-10-16T00:00:00+08:00</updated>
-        <id>http://emptymalei.github.io/planets-jekyll/til/astrology-symbols</id>
+        <id>https://loji44.github.io/til/astrology-symbols</id>
         <author>
 					<name>jekyll 行星主题</name>
-					<uri>http://emptymalei.github.io/planets-jekyll/</uri>
+					<uri>https://loji44.github.io/</uri>
 					<email>example@example.com</email>
 				</author>
         <content type="html">
@@ -160,12 +160,12 @@
     
     <entry>
         <title>在火星上如何通过星空辨别方向</title>
-        <link href="http://emptymalei.github.io/planets-jekyll/science/mars-north/"/>
+        <link href="https://loji44.github.io/science/mars-north/"/>
         <updated>2014-10-16T00:00:00+08:00</updated>
-        <id>http://emptymalei.github.io/planets-jekyll/science/mars-north</id>
+        <id>https://loji44.github.io/science/mars-north</id>
         <author>
 					<name>jekyll 行星主题</name>
-					<uri>http://emptymalei.github.io/planets-jekyll/</uri>
+					<uri>https://loji44.github.io/</uri>
 					<email>example@example.com</email>
 				</author>
         <content type="html">
@@ -178,7 +178,7 @@
   &lt;figcaption&gt;
 找到天津四和仙王座阿尔法，它们连线中点（图中橙色的圆点）始终指向北。图片制作使用了 &lt;a href=&quot;http://www.stellarium.org/&quot; target=&quot;_blank&quot;&gt;Stellerium&lt;/a&gt;.
 &lt;/figcaption&gt;
-  &lt;p&gt;&lt;img src=&quot;http://emptymalei.github.io/planets-jekyll/images/mars-northern-star.png&quot; alt=&quot;火星上寻找北极的方法&quot; /&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;img src=&quot;https://loji44.github.io/images/mars-northern-star.png&quot; alt=&quot;火星上寻找北极的方法&quot; /&gt;&lt;/p&gt;
 &lt;/figure&gt;
 
 &lt;p&gt;作为一个有趣的补充知识，在大约公元九千年，在地球上找北方的方法，就跟上面一样了！&lt;/p&gt;
