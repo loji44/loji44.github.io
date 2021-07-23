@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>PandaQ Blog</title>
+    <title>Loji44's Blog</title>
     <description></description>
-    <link>http://pandaq.xyz/</link>
-    <atom:link href="http://pandaq.xyz/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 22 Jul 2021 13:55:07 +0000</pubDate>
-    <lastBuildDate>Thu, 22 Jul 2021 13:55:07 +0000</lastBuildDate>
+    <link>https://loji44.github.io/</link>
+    <atom:link href="https://loji44.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Fri, 23 Jul 2021 03:37:45 +0000</pubDate>
+    <lastBuildDate>Fri, 23 Jul 2021 03:37:45 +0000</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -18,8 +18,8 @@
 &lt;/ul&gt;
 </description>
         <pubDate>Mon, 01 Feb 2021 12:14:31 +0000</pubDate>
-        <link>http://pandaq.xyz/2021/02/01/1th-2th-3th-dependency/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2021/02/01/1th-2th-3th-dependency/</guid>
+        <link>https://loji44.github.io/2021/02/01/1th-2th-3th-dependency/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2021/02/01/1th-2th-3th-dependency/</guid>
         
         <category>Maven</category>
         
@@ -115,8 +115,8 @@
 &lt;/ol&gt;
 </description>
         <pubDate>Mon, 04 Jan 2021 08:55:34 +0000</pubDate>
-        <link>http://pandaq.xyz/2021/01/04/java-reflection-get-method-parameter-real-name/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2021/01/04/java-reflection-get-method-parameter-real-name/</guid>
+        <link>https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name/</guid>
         
         <category>Java</category>
         
@@ -460,8 +460,8 @@
 &lt;p&gt;完。&lt;/p&gt;
 </description>
         <pubDate>Thu, 22 Oct 2020 09:55:55 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/10/22/flatData-transfer-treeData/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/10/22/flatData-transfer-treeData/</guid>
+        <link>https://loji44.github.io/2020/10/22/flatData-transfer-treeData/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/10/22/flatData-transfer-treeData/</guid>
         
         <category>Java</category>
         
@@ -647,8 +647,8 @@
 &lt;p&gt;method2()的事务传播机制是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Propagation.NOT_SUPPORTED&lt;/code&gt;，即不支持事务。如果当前存在事务，它会挂起当前事务，并以非事务的方式执行method2()。执行完method2再恢复method1的事务。在这个例子中，method2()就不会以事务方式执行，发生异常也不会回滚method2()中涉及到的数据库操作。&lt;/p&gt;
 </description>
         <pubDate>Fri, 04 Sep 2020 03:36:26 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/09/04/spring-transaction-does-not-work/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/09/04/spring-transaction-does-not-work/</guid>
+        <link>https://loji44.github.io/2020/09/04/spring-transaction-does-not-work/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/09/04/spring-transaction-does-not-work/</guid>
         
         <category>Spring</category>
         
@@ -691,8 +691,8 @@
 &lt;/ol&gt;
 </description>
         <pubDate>Thu, 30 Jul 2020 04:09:20 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/07/30/redis-caching-problems/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/07/30/redis-caching-problems/</guid>
+        <link>https://loji44.github.io/2020/07/30/redis-caching-problems/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/07/30/redis-caching-problems/</guid>
         
         <category>Redis</category>
         
@@ -806,8 +806,8 @@ Host github.com
 
 </description>
         <pubDate>Mon, 27 Jul 2020 08:27:45 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/07/27/ssh-config/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/07/27/ssh-config/</guid>
+        <link>https://loji44.github.io/2020/07/27/ssh-config/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/07/27/ssh-config/</guid>
         
         <category>Linux</category>
         
@@ -843,8 +843,8 @@ Host github.com
 &lt;p&gt;最后将&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.arthas&lt;/code&gt;文件夹也&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scp&lt;/code&gt;传送到客户的目标机器，即可完成。&lt;/p&gt;
 </description>
         <pubDate>Mon, 27 Jul 2020 07:20:00 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/07/27/arthas-run-without-network/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/07/27/arthas-run-without-network/</guid>
+        <link>https://loji44.github.io/2020/07/27/arthas-run-without-network/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/07/27/arthas-run-without-network/</guid>
         
         <category>Java</category>
         
@@ -904,8 +904,8 @@ RUN &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&q
 &lt;/ol&gt;
 </description>
         <pubDate>Mon, 27 Jul 2020 06:08:45 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/07/27/timezone-settings/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/07/27/timezone-settings/</guid>
+        <link>https://loji44.github.io/2020/07/27/timezone-settings/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/07/27/timezone-settings/</guid>
         
         <category>Linux</category>
         
@@ -958,8 +958,8 @@ RUN &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&q
 &lt;/ol&gt;
 </description>
         <pubDate>Fri, 17 Jul 2020 12:44:51 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/07/17/curl/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/07/17/curl/</guid>
+        <link>https://loji44.github.io/2020/07/17/curl/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/07/17/curl/</guid>
         
         <category>Linux</category>
         
@@ -1103,8 +1103,8 @@ RUN &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&q
 &lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Fri, 12 Jun 2020 13:52:22 +0000</pubDate>
-        <link>http://pandaq.xyz/2020/06/12/dubbo-timeout/</link>
-        <guid isPermaLink="true">http://pandaq.xyz/2020/06/12/dubbo-timeout/</guid>
+        <link>https://loji44.github.io/2020/06/12/dubbo-timeout/</link>
+        <guid isPermaLink="true">https://loji44.github.io/2020/06/12/dubbo-timeout/</guid>
         
         <category>Dubbo</category>
         
