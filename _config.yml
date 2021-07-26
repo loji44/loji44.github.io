@@ -1,6 +1,6 @@
-name: "Blog · Tanky Woo"
-description: "Tanky Woo's Blog, focus on Python, Linux, Gentoo, Mac OS, Vim, Open Source and so on."
-url: "http://blog.tankywoo.com"
+name: "Blog · Loji44"
+description: "Loji44's Blog, Linux, Java, Vim, Open Source and so on."
+url: "https://loji44.github.io"
 markdown: redcarpet
 highlighter: pygments
 exclude: ["fabfile.py*", "*.bak"]
