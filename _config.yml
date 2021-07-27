@@ -1,6 +1,0 @@
-name: "Blog · Loji44"
-description: "Loji44's Blog, Linux, Java, Vim, Open Source and so on."
-url: "https://loji44.github.io"
-markdown: redcarpet
-highlighter: pygments
-exclude: ["fabfile.py*", "*.bak"]
