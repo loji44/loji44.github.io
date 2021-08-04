@@ -1,3 +1,4 @@
+<!-- 某个tag下面的所有文章列表页面 -->
 <!DOCTYPE html>
 <html lang="en">
   <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
@@ -28,7 +29,6 @@
 </div>
       <div class="site">
           <ul class="posts">
-            <!-- 从URL中截取tag进行展示：例如: http://127.0.0.1:4000/tags/博客.html => 截取出 "博客"  -->
             
             <div class="tag_name">-- TAG: Python --</div>
             
@@ -55,3 +55,7 @@
   <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by ExSimple.</p>
 </div>
 </html>
+
+<script type="application/javascript">
+    console.log(window.location.href);
+</script>

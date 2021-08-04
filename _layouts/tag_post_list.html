@@ -1,3 +1,4 @@
+<!-- 某个tag下面的所有文章列表页面 -->
 <!DOCTYPE html>
 <html lang="en">
   {% include head.html %}
@@ -6,8 +7,7 @@
       {% include nav.html %}
       <div class="site">
           <ul class="posts">
-            <!-- 从URL中截取tag进行展示：例如: http://127.0.0.1:4000/tags/博客.html => 截取出 "博客"  -->
-            {% assign tag = page.url | split: '/' | last | split: '.' | first | url_decode %}
+            {% assign tag = page.name | split: '.' | first | url_decode %}
             <div class="tag_name">-- TAG: {{ tag }} --</div>
             {% for post in site.posts %}
               {% if post.tags contains tag %}
@@ -21,3 +21,7 @@
   </body>
   {% include footer.html %}
 </html>
+
+<script type="application/javascript">
+    console.log(window.location.href);
+</script>
