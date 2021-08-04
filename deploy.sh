@@ -6,7 +6,9 @@ git add --all && git commit -m 'update' && git push origin master
 
 bundle install && jekyll build
 
-cp -R _site/* ../loji44.github.io
+rm -rf ../loji44.github.io/*
+
+cp -R _site/* ../loji44.github.io/
 
 cd ../loji44.github.io
 
