@@ -4,6 +4,7 @@ title: Jekyll博客搭建
 date: 2019-08-20 15:28:34.000000000 +08:00
 tags: 
  - 博客
+ - Jekyll
 ---
 
 博客基于[Jekyll](https://jekyllrb.com/)博客框架来搭建，并采用[Hux Blog](https://github.com/Huxpro/huxpro.github.io)作为博客主题。分两步走：
