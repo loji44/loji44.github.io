@@ -118,7 +118,7 @@
   <p>If multiple rows have identical values in the ORDER BY columns, the server is free to return those rows in any order, and may do so differently depending on the overall execution plan. In other words, the sort order of those rows is nondeterministic with respect to the nonordered columns.</p>
 </blockquote>
 
-<p>这里意思是，如果 ORDER BY 所指定的排序字段中存在多行的值相同（就是我们遇到的情况），针对未指定排序的字段，MySQL返回的结果行数据的顺序是不确定的。既然返回的数据顺序不确定，那么在LIMIT取数据的时候，就有可能取到重复的数据，这就解释了我们遇到的情况为什么是这样的。可能MySQL就是这样设计的吧🤷‍♂️🤷‍♂️🤷‍♂️。</p>
+<p>这里意思是，如果 ORDER BY 所指定的排序字段中存在多行的值相同（就是上述遇到的情况），针对未指定排序的字段，MySQL返回的结果行数据的顺序是不确定的。既然返回的数据顺序不确定，那么在LIMIT取数据的时候，就有可能取到重复的数据，这就解释了我们遇到的情况为什么是这样的。可能MySQL就是这样设计的吧🤷‍♂️🤷‍♂️🤷‍♂️。</p>
 
 <p>另一个影响数据顺序的因素是LIMIT子句，ORDER BY的时候，后面有LIMIT和没有LIMIT时返回数据的顺序是不一样的。</p>
 
