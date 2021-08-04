@@ -4,7 +4,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-public final class IPUtils {
+public final class IpUtils {
 
     /**
      * 请求通过反向代理之后，可能包含请求客户端真实IP的HTTP HEADER
@@ -15,14 +15,14 @@ public final class IPUtils {
             "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR"
     };
 
-    private IPUtils() {}
+    private IpUtils() {}
 
     /**
      * 获取请求客户端的真实IP地址
      * @param request javax.servlet.http.HttpServletRequest
-     * @return 客户端端真实IP地址
+     * @return 客户端真实IP地址
      */
-    public static String getRequestClientRealIP(HttpServletRequest request) {
+    public static String getClientIp(HttpServletRequest request) {
         String ip;
         // 先检查代理：逐个HTTP HEADER检查过去，看看是否存在客户端真实IP
         for (String header : POSSIBLE_HEADERS) {
@@ -45,7 +45,7 @@ public final class IPUtils {
      * 获取本机IP地址
      * @return 若配置了外网IP则优先返回外网IP；否则返回本地IP地址。如果本机没有被分配局域网IP地址（例如本机没有连接任何网络），则默认返回127.0.0.1
      */
-    public static String getLocalRealIP() {
+    public static String getLocalRealIp() {
         String localIP = "127.0.0.1"; // 本地IP
         String netIP = null; // 外网IP
 

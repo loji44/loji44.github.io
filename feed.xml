@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://loji44.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://loji44.github.io/" rel="alternate" type="text/html" /><updated>2021-08-04T22:52:33+08:00</updated><id>https://loji44.github.io/feed.xml</id><title type="html">Blog · Loji44</title><entry><title type="html">Java运行时利用反射获取方法的参数名称</title><link href="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html" rel="alternate" type="text/html" title="Java运行时利用反射获取方法的参数名称" /><published>2021-01-04T16:55:34+08:00</published><updated>2021-01-04T16:55:34+08:00</updated><id>https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name</id><content type="html" xml:base="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html">&lt;p&gt;JDK1.8之前，我们通过反射获取一个方法定义的参数名称时，无法获取到真实的参数名称，例如：&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://loji44.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://loji44.github.io/" rel="alternate" type="text/html" /><updated>2021-08-04T23:39:13+08:00</updated><id>https://loji44.github.io/feed.xml</id><title type="html">Blog · Loji44</title><entry><title type="html">Java运行时利用反射获取方法的参数名称</title><link href="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html" rel="alternate" type="text/html" title="Java运行时利用反射获取方法的参数名称" /><published>2021-01-04T16:55:34+08:00</published><updated>2021-01-04T16:55:34+08:00</updated><id>https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name</id><content type="html" xml:base="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html">&lt;p&gt;JDK1.8之前，我们通过反射获取一个方法定义的参数名称时，无法获取到真实的参数名称，例如：&lt;/p&gt;
 
 &lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SomeClass&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
     &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nickName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Integer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
@@ -599,11 +599,7 @@ auto-aof-rewrite-min-size 64mb
 
 &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INSERT INTO ... ON DUPLICATE KEY UPDATE&lt;/code&gt;作用是，若INSERT发生了唯一性约束错误，那么就执行该条记录的更新操作；若没有发生唯一性约束错误，说明记录还未存在，直接执行插入操作。&lt;/p&gt;
 
-&lt;hr /&gt;</content><author><name></name></author><category term="MySQL" /><summary type="html">开发中经常会一次性往一个里INSERT多条数据，但是当某条INSERT SQL因为与表中发生主键冲突，或者与某个定义为UNIQUE KEY的字段发生Duplicate entry错误时，MySQL会放弃执行后续的INSERT SQL。而我们希望如果某条INSERT发生了唯一性约束的错误，那么这条INSERT不插入数据即可，不要影响后面的其他INSERT语句的执行。</summary></entry><entry><title type="html">Java获取HTTP请求中客户端真实IP的工具类</title><link href="https://loji44.github.io/2020/03/13/IPUtils.html" rel="alternate" type="text/html" title="Java获取HTTP请求中客户端真实IP的工具类" /><published>2020-03-13T14:48:15+08:00</published><updated>2020-03-13T14:48:15+08:00</updated><id>https://loji44.github.io/2020/03/13/IPUtils</id><content type="html" xml:base="https://loji44.github.io/2020/03/13/IPUtils.html">&lt;p&gt;有时候需要在服务器端获取HTTP请求客户端的真实IP地址，这里记录一下。&lt;/p&gt;
-
-&lt;p&gt;点击下载工具类的Java源代码文件：&lt;a href=&quot;/static/files/IPUtils.java&quot;&gt;IPUtils.java&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;或者完整的工具类代码如下所示：&lt;/p&gt;
+&lt;hr /&gt;</content><author><name></name></author><category term="MySQL" /><summary type="html">开发中经常会一次性往一个里INSERT多条数据，但是当某条INSERT SQL因为与表中发生主键冲突，或者与某个定义为UNIQUE KEY的字段发生Duplicate entry错误时，MySQL会放弃执行后续的INSERT SQL。而我们希望如果某条INSERT发生了唯一性约束的错误，那么这条INSERT不插入数据即可，不要影响后面的其他INSERT语句的执行。</summary></entry><entry><title type="html">Java获取HTTP请求中客户端真实IP</title><link href="https://loji44.github.io/2020/03/13/IpUtils.html" rel="alternate" type="text/html" title="Java获取HTTP请求中客户端真实IP" /><published>2020-03-13T14:48:15+08:00</published><updated>2020-03-13T14:48:15+08:00</updated><id>https://loji44.github.io/2020/03/13/IpUtils</id><content type="html" xml:base="https://loji44.github.io/2020/03/13/IpUtils.html">&lt;p&gt;Web服务器端获取HTTP请求客户端的真实IP地址工具类，点击下载：&lt;a href=&quot;/static/files/IpUtils.java&quot; download=&quot;IpUtils.java&quot;&gt;IpUtils.java&lt;/a&gt;&lt;/p&gt;
 
 &lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;javax.servlet.http.HttpServletRequest&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
 &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.net.InetAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
@@ -611,7 +607,7 @@ auto-aof-rewrite-min-size 64mb
 &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.net.SocketException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
 &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.util.Enumeration&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
 
-&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;IPUtils&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;IpUtils&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
 
     &lt;span class=&quot;cm&quot;&gt;/**
      * 请求通过反向代理之后，可能包含请求客户端真实IP的HTTP HEADER
@@ -622,14 +618,14 @@ auto-aof-rewrite-min-size 64mb
             &lt;span class=&quot;s&quot;&gt;&quot;WL-Proxy-Client-IP&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;HTTP_CLIENT_IP&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;HTTP_X_FORWARDED_FOR&quot;&lt;/span&gt;
     &lt;span class=&quot;o&quot;&gt;};&lt;/span&gt;
 
-    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;IPUtils&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;IpUtils&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
 
     &lt;span class=&quot;cm&quot;&gt;/**
      * 获取请求客户端的真实IP地址
      * @param request javax.servlet.http.HttpServletRequest
      * @return 客户端端真实IP地址
      */&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getRequestClientRealIP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;HttpServletRequest&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getClientIp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;HttpServletRequest&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
         &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
         &lt;span class=&quot;c1&quot;&gt;// 先检查代理：逐个HTTP HEADER检查过去，看看是否存在客户端真实IP&lt;/span&gt;
         &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;header&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;POSSIBLE_HEADERS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
@@ -643,7 +639,7 @@ auto-aof-rewrite-min-size 64mb
         &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getRemoteAddr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
         &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;0:0:0:0:0:0:0:1&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;127.0.0.1&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
             &lt;span class=&quot;c1&quot;&gt;// 说明是从本机发出的请求，直接获取并返回本机IP地址&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getLocalRealIP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getLocalRealIp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
         &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
         &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
     &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
@@ -652,7 +648,7 @@ auto-aof-rewrite-min-size 64mb
      * 获取本机IP地址
      * @return 若配置了外网IP则优先返回外网IP；否则返回本地IP地址。如果本机没有被分配局域网IP地址（例如本机没有连接任何网络），则默认返回127.0.0.1
      */&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getLocalRealIP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getLocalRealIp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
         &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;localIP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;127.0.0.1&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 本地IP&lt;/span&gt;
         &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;netIP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 外网IP&lt;/span&gt;
 
@@ -731,7 +727,7 @@ auto-aof-rewrite-min-size 64mb
 &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;hr /&gt;</content><author><name></name></author><category term="Java" /><summary type="html">有时候需要在服务器端获取HTTP请求客户端的真实IP地址，这里记录一下。</summary></entry><entry><title type="html">Linux中让进程在后台运行更可靠的几种方法</title><link href="https://loji44.github.io/2020/02/25/linux-nohup.html" rel="alternate" type="text/html" title="Linux中让进程在后台运行更可靠的几种方法" /><published>2020-02-25T09:00:00+08:00</published><updated>2020-02-25T09:00:00+08:00</updated><id>https://loji44.github.io/2020/02/25/linux-nohup</id><content type="html" xml:base="https://loji44.github.io/2020/02/25/linux-nohup.html">&lt;blockquote&gt;
+&lt;hr /&gt;</content><author><name></name></author><category term="Java" /><summary type="html">Web服务器端获取HTTP请求客户端的真实IP地址工具类，点击下载：IpUtils.java</summary></entry><entry><title type="html">Linux中让进程在后台运行更可靠的几种方法</title><link href="https://loji44.github.io/2020/02/25/linux-nohup.html" rel="alternate" type="text/html" title="Linux中让进程在后台运行更可靠的几种方法" /><published>2020-02-25T09:00:00+08:00</published><updated>2020-02-25T09:00:00+08:00</updated><id>https://loji44.github.io/2020/02/25/linux-nohup</id><content type="html" xml:base="https://loji44.github.io/2020/02/25/linux-nohup.html">&lt;blockquote&gt;
   &lt;p&gt;声明：本篇文章不是原创，转载自：&lt;a href=&quot;https://www.ibm.com/developerworks/cn/linux/l-cn-nohup&quot;&gt;https://www.ibm.com/developerworks/cn/linux/l-cn-nohup&lt;/a&gt; &lt;br /&gt;
 原文章已经写得很好了，这里转载过来，然后自己实践并记录一下。感谢原文章的作者。&lt;/p&gt;
 &lt;/blockquote&gt;
