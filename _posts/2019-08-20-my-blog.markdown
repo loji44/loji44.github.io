@@ -1,0 +1,173 @@
+---
+layout: post
+title: Jekyll博客搭建
+date: 2019-08-20 15:28:34.000000000 +08:00
+tags: 
+ - 博客
+---
+
+博客基于[Jekyll](https://jekyllrb.com/)博客框架来搭建，并采用[Hux Blog](https://github.com/Huxpro/huxpro.github.io)作为博客主题。分两步走：
+
+- 安装Jekyll博客的开发环境
+- 配置Hux Blog作为博客主题
+
+### 1. 安装Jekyll博客开发环境
+Jekyll依赖Ruby语言环境，所以要先安装Ruby。我自己电脑（Mac OS）本身自带了Ruby，版本为：
+
+```bash
+$ ruby -v
+ruby 2.3.7p456 (2018-03-28 revision 63024) [universal.x86_64-darwin18]
+```
+
+>根据[Jekyll官网](https://jekyllrb.com/)中介绍的“三大步”安装教程，可以很快搭建一个静态博客网站。
+
+首先，我们执行下面的指令来安装 Jekyll：
+
+```bash
+$ gem install bundler jekyll
+```
+
+很遗憾，我运行该指令到最后，它报了一个错误给我：
+
+```bash
+··· ···
+Fetching: jekyll-sass-converter-2.0.0.gem (100%)
+ERROR:  Error installing jekyll:
+	jekyll-sass-converter requires Ruby version >= 2.4.0.
+```
+
+嗯... 很明显，我电脑自带的Ruby版本没满足Jekyll要求的版本（`Ruby version >= 2.4.0`）。还能怎么办？那就来升级一下Ruby的版本呗：
+
+>参考了这篇文章：「[Mac OS升级Ruby](https://www.jianshu.com/p/a575aff064e3)」把Ruby升级到了2.6.3版本。这篇文章中介绍的升级方法，核心就是使用Ruby的第三方版本管理工具[RVM](http://rvm.io/)来完成。
+
+那么就先来安装RVM（官网也有介绍[如何安装RVM](http://rvm.io/)）：
+
+```bash
+$ curl -L get.rvm.io | bash -s stable
+```
+
+安装完成之后，执行下面的指令来使RVM立即生效：
+
+```bash
+$ source ~/.rvm/scripts/rvm
+```
+
+来检查一下RVM是否已经成功安装以及生效：
+
+```bash
+$ rvm -v
+rvm 1.29.9 (latest) by Michal Papis, Piotr Kuczynski, Wayne E. Seguin [https://rvm.io]
+```
+
+好了，RVM安装完毕。我们来升级Ruby的版本，从Ruby官网了解到当前最新版本是`2.6.3`：
+```bash
+$ rvm install 2.6.3
+... ...
+ruby-2.6.3 - #generating default wrappers.......
+ruby-2.6.3 - #adjusting #shebangs for (gem irb erb ri rdoc testrb rake).
+Install of ruby-2.6.3 - #complete
+```
+
+看上面的提示，应该是成功安装了`2.6.3`版本的Ruby，我们来检验一下：
+
+```bash
+$ ruby -v
+ruby 2.6.3p62 (2019-04-16 revision 67580) [x86_64-darwin18]
+```
+
+没错了，接下来继续安装我们的Jekyll，直接执行下面的指令进行安装：
+                           
+```bash
+$ gem install bundler jekyll
+```
+
+这个安装过程可能会有点耗时，请耐心等待安装Jekyll完成 ...
+
+### 2. 使用Hux Blog作为博客主题
+
+经过上一章，我们已经将Jekyll开发环境搭建好了，现在来配置Hux Blog作为博客主题。
+
+- 下载Hux Blog主题源码，删除无关的文件
+
+```bash
+$ git clone git@github.com:Huxpro/huxblog-boilerplate.git my_blog_site
+$ cd my_blog_site
+$ rm -rf my_blog_site/_posts/*
+```
+
+>因为我们下载的是主题作者的博客源码，所以使用 `rm -rf my_blog_site/_posts/*`直接删除作者的发布的文章，然后我们就可以在 `_posts`目录下面创建自己的博客文章，写博客了。
+
+- 写一个简单的博客文章：`vim 2019-08-20-my-blog.markdown` 内容如下：
+
+```bash
+---
+layout: post
+title: 关于我的博客网站
+subtitle: 我的博客网站搭建记录
+date: 2019-08-20 15:28:34.000000000 +08:00
+header-img: assets/images/tag-bg.jpg
+author: PandaQ
+tags: 
+ - Blog
+ - 技术教程
+---
+
+>这篇文章记录一下自己博客搭建的过程。
+
+```
+
+- 启动Jekyll
+
+```bash
+$ bundle install && bundle exec jekyll serve
+```
+
+启动成功之后，访问 <a href="http://127.0.0.1:4000" target="_blank">http://127.0.0.1:4000</a> 就可以看到搭建好的博客页面。
+
+Jekyll默认监听的host是`127.0.0.0`，只能从本机电脑访问；启动Jekyll的时候使用`--host`参数让Jekyll监听的host为`0.0.0.0`。
+
+```bash
+$ bundle exec jekyll serve --host 0.0.0.0
+Configuration file: /root/my_blog_site/_config.yml
+            Source: /root/my_blog_site
+       Destination: /root/my_blog_site/_site
+ Incremental build: disabled. Enable with --incremental
+      Generating...
+                    done in 0.408 seconds.
+ Auto-regeneration: enabled for '/root/my_blog_site'
+    Server address: http://0.0.0.0:4000
+  Server running... press ctrl-c to stop.
+```
+
+还可以使用`--port`参数来修改Jekyll监听的端口：
+
+```bash
+$ bundle exec jekyll serve --host 0.0.0.0 --port 8080
+Configuration file: /root/my_blog_site/_config.yml
+            Source: /root/my_blog_site
+       Destination: /root/my_blog_site/_site
+ Incremental build: disabled. Enable with --incremental
+      Generating...
+                    done in 0.419 seconds.
+ Auto-regeneration: enabled for '/root/my_blog_site'
+    Server address: http://0.0.0.0:8080
+  Server running... press ctrl-c to stop.
+```
+
+使用`jekyll serve -h`来查看Jekyll启动服务时支持的其他启动参数。
+
+### 3. 将Jekyll博客以静态资源方式部署
+
+如果博客文章写好了，想将博客文章打包成静态资源结合Web服务器进行发布，例如使用`Nginx`或者`Github Pages`进行部署。
+
+- 进入博客代码根目录执行下面的指令，将博客打包成静态资源：
+
+```bash
+$ bundle install && jekyll build
+```
+
+运行完毕后，会在根目录下生成`_site`文件夹，这个文件夹就是我们的博客文章静态资源。直接将这个文件夹下的全部内容拷贝到`Nginx`的静态资源部署目录下，即可完成部署。
+
+或者你使用的是`Github Pages`，请参考官网的教程：[Github Pages](https://pages.github.com)。
+
+<hr />

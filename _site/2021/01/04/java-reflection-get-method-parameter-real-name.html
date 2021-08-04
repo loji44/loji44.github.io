@@ -1,0 +1,119 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Java运行时利用反射获取方法的参数名称 | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  &#47;&nbsp;<a class="extra" href="/about.html">ABOUT</a>
+  &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>Java运行时利用反射获取方法的参数名称</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/Java.html">#Java</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;04 January 2021&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p>JDK1.8之前，我们通过反射获取一个方法定义的参数名称时，无法获取到真实的参数名称，例如：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SomeClass</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">func</span><span class="o">(</span><span class="nc">String</span> <span class="n">nickName</span><span class="o">,</span> <span class="nc">Integer</span> <span class="n">age</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"something to be return"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>在类编译之后，类的方法参数名称会丢失，通过反射机制获取到的参数名称变成了<code class="language-plaintext highlighter-rouge">arg0</code>、<code class="language-plaintext highlighter-rouge">arg1</code>这样的。有些场景例如MyBatis这种通过反射来获取Mapper接口上方法参数然后映射到XML的SQL语句上，就没法直接用：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Mapper</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">SomeMapper</span> <span class="o">{</span>
+    <span class="nc">SomePojo</span> <span class="nf">selectOne</span><span class="o">(</span><span class="nc">String</span> <span class="n">nickName</span><span class="o">,</span> <span class="nc">String</span> <span class="n">mobile</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>XML文件如下：</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">"selectOne"</span> <span class="na">resultMap=</span><span class="s">"resultMap"</span><span class="nt">&gt;</span>
+    SELECT * FROM `some_table` WHERE nick_name = #{nickName} AND mobile = #{mobile};
+<span class="nt">&lt;/select&gt;</span>
+</code></pre></div></div>
+
+<p>MyBatis通过反射获取到的参数名称其实是：<code class="language-plaintext highlighter-rouge">nickName -&gt; arg0</code>、<code class="language-plaintext highlighter-rouge">mobile -&gt; arg1</code> 这样就没法正确映射到XML的SQL中<code class="language-plaintext highlighter-rouge">#{nickName}</code>、<code class="language-plaintext highlighter-rouge">#{mobile}</code>。</p>
+
+<p>所以需要使用<code class="language-plaintext highlighter-rouge">@Param</code>注解来告诉MyBatis参数的真实名称，MyBatis才能正确映射参数：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Mapper</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">SomeMapper</span> <span class="o">{</span>
+    <span class="nc">SomePojo</span> <span class="nf">selectOne</span><span class="o">(</span><span class="nd">@Param</span><span class="o">(</span><span class="s">"nickName"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">nickName</span><span class="o">,</span> <span class="nd">@Param</span><span class="o">(</span><span class="s">"mobile"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">mobile</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>JDK1.8之后，除了通过在参数上打注解的方式，Java原生的反射机制新增了一个类用于描述方法上的参数：<code class="language-plaintext highlighter-rouge">java.lang.reflect.Parameter</code>。我们可以直接通过这个反射类获取到方法参数的真实名称。</p>
+
+<p>前提是我们需要在编译的时候加入<code class="language-plaintext highlighter-rouge">-parameter</code>参数，让编译器在编译类的时候将方法的参数名称也打包到<code class="language-plaintext highlighter-rouge">.class</code>文件里面。默认情况下<code class="language-plaintext highlighter-rouge">-parameter</code>是关闭的，如果需要此功能，需要手动开启：</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;plugin&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>maven-compiler-plugin<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>3.8.1<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;configuration&gt;</span>
+        <span class="nt">&lt;compilerArgs&gt;</span>
+            <span class="nt">&lt;compilerArg&gt;</span>-parameters<span class="nt">&lt;/compilerArg&gt;</span>
+        <span class="nt">&lt;/compilerArgs&gt;</span>
+    <span class="nt">&lt;/configuration&gt;</span>
+<span class="nt">&lt;/plugin&gt;</span>
+</code></pre></div></div>
+
+<p>这样之后，就算我们不在参数上打<code class="language-plaintext highlighter-rouge">@Param</code>注解，MyBatis也能获取到真实的参数名称<code class="language-plaintext highlighter-rouge">nickName</code>和<code class="language-plaintext highlighter-rouge">mobile</code>。</p>
+
+<hr />
+
+<p>参考：</p>
+
+<ul>
+  <li><a href="https://www.cnblogs.com/kancy/p/10205036.html" target="_blank">https://www.cnblogs.com/kancy/p/10205036.html</a></li>
+  <li><a href="https://blog.csdn.net/xiewenfeng520/article/details/102515413" target="_blank">https://blog.csdn.net/xiewenfeng520/article/details/102515413</a></li>
+  <li><a href="https://www.jianshu.com/p/4f1f7a9d595f" target="_blank">https://www.jianshu.com/p/4f1f7a9d595f</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by ExSimple.</p>
+</div>
+</html>
