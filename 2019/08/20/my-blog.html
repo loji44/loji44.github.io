@@ -1,0 +1,241 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Jekyll博客搭建 | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>Jekyll博客搭建</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/博客.html">#博客</a>
+      
+        <a class="extra" href="/tags/Jekyll.html">#Jekyll</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;20 August 2019&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p>博客基于<a href="https://jekyllrb.com/">Jekyll</a>博客框架来搭建，并采用<a href="https://github.com/Huxpro/huxpro.github.io">Hux Blog</a>作为博客主题。分两步走：</p>
+
+<ul>
+  <li>安装Jekyll博客的开发环境</li>
+  <li>配置Hux Blog作为博客主题</li>
+</ul>
+
+<h3 id="1-安装jekyll博客开发环境">1. 安装Jekyll博客开发环境</h3>
+<p>Jekyll依赖Ruby语言环境，所以要先安装Ruby。我自己电脑（Mac OS）本身自带了Ruby，版本为：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ruby <span class="nt">-v</span>
+ruby 2.3.7p456 <span class="o">(</span>2018-03-28 revision 63024<span class="o">)</span> <span class="o">[</span>universal.x86_64-darwin18]
+</code></pre></div></div>
+
+<blockquote>
+  <p>根据<a href="https://jekyllrb.com/">Jekyll官网</a>中介绍的“三大步”安装教程，可以很快搭建一个静态博客网站。</p>
+</blockquote>
+
+<p>首先，我们执行下面的指令来安装 Jekyll：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>gem <span class="nb">install </span>bundler jekyll
+</code></pre></div></div>
+
+<p>很遗憾，我运行该指令到最后，它报了一个错误给我：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>··· ···
+Fetching: jekyll-sass-converter-2.0.0.gem <span class="o">(</span>100%<span class="o">)</span>
+ERROR:  Error installing jekyll:
+	jekyll-sass-converter requires Ruby version <span class="o">&gt;=</span> 2.4.0.
+</code></pre></div></div>
+
+<p>嗯… 很明显，我电脑自带的Ruby版本没满足Jekyll要求的版本（<code class="language-plaintext highlighter-rouge">Ruby version &gt;= 2.4.0</code>）。还能怎么办？那就来升级一下Ruby的版本呗：</p>
+
+<blockquote>
+  <p>参考了这篇文章：「<a href="https://www.jianshu.com/p/a575aff064e3">Mac OS升级Ruby</a>」把Ruby升级到了2.6.3版本。这篇文章中介绍的升级方法，核心就是使用Ruby的第三方版本管理工具<a href="http://rvm.io/">RVM</a>来完成。</p>
+</blockquote>
+
+<p>那么就先来安装RVM（官网也有介绍<a href="http://rvm.io/">如何安装RVM</a>）：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-L</span> get.rvm.io | bash <span class="nt">-s</span> stable
+</code></pre></div></div>
+
+<p>安装完成之后，执行下面的指令来使RVM立即生效：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">source</span> ~/.rvm/scripts/rvm
+</code></pre></div></div>
+
+<p>来检查一下RVM是否已经成功安装以及生效：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rvm <span class="nt">-v</span>
+rvm 1.29.9 <span class="o">(</span>latest<span class="o">)</span> by Michal Papis, Piotr Kuczynski, Wayne E. Seguin <span class="o">[</span>https://rvm.io]
+</code></pre></div></div>
+
+<p>好了，RVM安装完毕。我们来升级Ruby的版本，从Ruby官网了解到当前最新版本是<code class="language-plaintext highlighter-rouge">2.6.3</code>：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rvm <span class="nb">install </span>2.6.3
+... ...
+ruby-2.6.3 - <span class="c">#generating default wrappers.......</span>
+ruby-2.6.3 - <span class="c">#adjusting #shebangs for (gem irb erb ri rdoc testrb rake).</span>
+Install of ruby-2.6.3 - <span class="c">#complete</span>
+</code></pre></div></div>
+
+<p>看上面的提示，应该是成功安装了<code class="language-plaintext highlighter-rouge">2.6.3</code>版本的Ruby，我们来检验一下：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ruby <span class="nt">-v</span>
+ruby 2.6.3p62 <span class="o">(</span>2019-04-16 revision 67580<span class="o">)</span> <span class="o">[</span>x86_64-darwin18]
+</code></pre></div></div>
+
+<p>没错了，接下来继续安装我们的Jekyll，直接执行下面的指令进行安装：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>gem <span class="nb">install </span>bundler jekyll
+</code></pre></div></div>
+
+<p>这个安装过程可能会有点耗时，请耐心等待安装Jekyll完成 …</p>
+
+<h3 id="2-使用hux-blog作为博客主题">2. 使用Hux Blog作为博客主题</h3>
+
+<p>经过上一章，我们已经将Jekyll开发环境搭建好了，现在来配置Hux Blog作为博客主题。</p>
+
+<ul>
+  <li>下载Hux Blog主题源码，删除无关的文件</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>git clone git@github.com:Huxpro/huxblog-boilerplate.git my_blog_site
+<span class="nv">$ </span><span class="nb">cd </span>my_blog_site
+<span class="nv">$ </span><span class="nb">rm</span> <span class="nt">-rf</span> my_blog_site/_posts/<span class="k">*</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>因为我们下载的是主题作者的博客源码，所以使用 <code class="language-plaintext highlighter-rouge">rm -rf my_blog_site/_posts/*</code>直接删除作者的发布的文章，然后我们就可以在 <code class="language-plaintext highlighter-rouge">_posts</code>目录下面创建自己的博客文章，写博客了。</p>
+</blockquote>
+
+<ul>
+  <li>写一个简单的博客文章：<code class="language-plaintext highlighter-rouge">vim 2019-08-20-my-blog.markdown</code> 内容如下：</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">---</span>
+layout: post
+title: 关于我的博客网站
+subtitle: 我的博客网站搭建记录
+<span class="nb">date</span>: 2019-08-20 15:28:34.000000000 +08:00
+header-img: assets/images/tag-bg.jpg
+author: PandaQ
+tags: 
+ - Blog
+ - 技术教程
+<span class="nt">---</span>
+
+<span class="o">&gt;</span>这篇文章记录一下自己博客搭建的过程。
+
+</code></pre></div></div>
+
+<ul>
+  <li>启动Jekyll</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">install</span> <span class="o">&amp;&amp;</span> bundle <span class="nb">exec </span>jekyll serve
+</code></pre></div></div>
+
+<p>启动成功之后，访问 <a href="http://127.0.0.1:4000" target="_blank">http://127.0.0.1:4000</a> 就可以看到搭建好的博客页面。</p>
+
+<p>Jekyll默认监听的host是<code class="language-plaintext highlighter-rouge">127.0.0.0</code>，只能从本机电脑访问；启动Jekyll的时候使用<code class="language-plaintext highlighter-rouge">--host</code>参数让Jekyll监听的host为<code class="language-plaintext highlighter-rouge">0.0.0.0</code>。</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">exec </span>jekyll serve <span class="nt">--host</span> 0.0.0.0
+Configuration file: /root/my_blog_site/_config.yml
+            Source: /root/my_blog_site
+       Destination: /root/my_blog_site/_site
+ Incremental build: disabled. Enable with <span class="nt">--incremental</span>
+      Generating...
+                    <span class="k">done in </span>0.408 seconds.
+ Auto-regeneration: enabled <span class="k">for</span> <span class="s1">'/root/my_blog_site'</span>
+    Server address: http://0.0.0.0:4000
+  Server running... press ctrl-c to stop.
+</code></pre></div></div>
+
+<p>还可以使用<code class="language-plaintext highlighter-rouge">--port</code>参数来修改Jekyll监听的端口：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">exec </span>jekyll serve <span class="nt">--host</span> 0.0.0.0 <span class="nt">--port</span> 8080
+Configuration file: /root/my_blog_site/_config.yml
+            Source: /root/my_blog_site
+       Destination: /root/my_blog_site/_site
+ Incremental build: disabled. Enable with <span class="nt">--incremental</span>
+      Generating...
+                    <span class="k">done in </span>0.419 seconds.
+ Auto-regeneration: enabled <span class="k">for</span> <span class="s1">'/root/my_blog_site'</span>
+    Server address: http://0.0.0.0:8080
+  Server running... press ctrl-c to stop.
+</code></pre></div></div>
+
+<p>使用<code class="language-plaintext highlighter-rouge">jekyll serve -h</code>来查看Jekyll启动服务时支持的其他启动参数。</p>
+
+<h3 id="3-将jekyll博客以静态资源方式部署">3. 将Jekyll博客以静态资源方式部署</h3>
+
+<p>如果博客文章写好了，想将博客文章打包成静态资源结合Web服务器进行发布，例如使用<code class="language-plaintext highlighter-rouge">Nginx</code>或者<code class="language-plaintext highlighter-rouge">Github Pages</code>进行部署。</p>
+
+<ul>
+  <li>进入博客代码根目录执行下面的指令，将博客打包成静态资源：</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">install</span> <span class="o">&amp;&amp;</span> jekyll build
+</code></pre></div></div>
+
+<p>运行完毕后，会在根目录下生成<code class="language-plaintext highlighter-rouge">_site</code>文件夹，这个文件夹就是我们的博客文章静态资源。直接将这个文件夹下的全部内容拷贝到<code class="language-plaintext highlighter-rouge">Nginx</code>的静态资源部署目录下，即可完成部署。</p>
+
+<p>或者你使用的是<code class="language-plaintext highlighter-rouge">Github Pages</code>，请参考官网的教程：<a href="https://pages.github.com">Github Pages</a>。</p>
+
+<hr />
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by ExSimple.</p>
+</div>
+</html>

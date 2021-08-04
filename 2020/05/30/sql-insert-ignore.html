@@ -1,0 +1,146 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>MySQL INSERT IGNORE INTO | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>MySQL INSERT IGNORE INTO</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/MySQL.html">#MySQL</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;30 May 2020&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p>开发中经常会一次性往一个里INSERT多条数据，但是当某条INSERT SQL因为与表中发生<strong>主键冲突</strong>，或者与某个定义为<code class="language-plaintext highlighter-rouge">UNIQUE KEY</code>的字段发生<code class="language-plaintext highlighter-rouge">Duplicate entry</code>错误时，MySQL会放弃执行后续的INSERT SQL。而我们希望如果某条INSERT发生了唯一性约束的错误，那么这条INSERT不插入数据即可，不要影响后面的其他INSERT语句的执行。</p>
+
+<h3 id="1-需求描述">1. 需求描述</h3>
+
+<p>有张表的结构如下所示：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="nv">`my_user`</span> <span class="p">(</span>
+  <span class="nv">`id`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="nb">unsigned</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span> <span class="k">COMMENT</span> <span class="s1">'自增ID'</span><span class="p">,</span>
+  <span class="nv">`nickname`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span> <span class="k">COMMENT</span> <span class="s1">'用户昵称'</span><span class="p">,</span>
+  <span class="nv">`mobile`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span> <span class="k">COMMENT</span> <span class="s1">'手机号码'</span><span class="p">,</span>
+  <span class="nv">`email`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span> <span class="k">COMMENT</span> <span class="s1">'邮箱地址'</span><span class="p">,</span>
+  <span class="nv">`address`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span> <span class="k">COMMENT</span> <span class="s1">'居住地址'</span><span class="p">,</span>
+  <span class="nv">`age`</span> <span class="nb">tinyint</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="nb">unsigned</span> <span class="k">DEFAULT</span> <span class="k">NULL</span> <span class="k">COMMENT</span> <span class="s1">'用户年龄'</span><span class="p">,</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="nv">`id`</span><span class="p">),</span>
+  <span class="k">UNIQUE</span> <span class="k">KEY</span> <span class="nv">`uk_nickname`</span> <span class="p">(</span><span class="nv">`nickname`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span> <span class="k">COMMENT</span><span class="o">=</span><span class="s1">'用户表'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>id字段为主键；在nickname字段处创建了唯一索引。</p>
+</blockquote>
+
+<p>当往表里一次性插入多条数据，前两条数据数据的id值都为1：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">'zhangsan'</span><span class="p">,</span> <span class="s1">'17777778901'</span><span class="p">,</span> <span class="s1">'zhangsan@foxmail.com'</span><span class="p">,</span> <span class="s1">'Beijing'</span><span class="p">,</span> <span class="mi">18</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">'lisi'</span><span class="p">,</span> <span class="s1">'16688990101'</span><span class="p">,</span> <span class="s1">'lisi@foxmail.com'</span><span class="p">,</span> <span class="s1">'Hangzhou'</span><span class="p">,</span> <span class="mi">28</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">'wangwu'</span><span class="p">,</span> <span class="s1">'155784983939'</span><span class="p">,</span> <span class="s1">'wangwu@foxmail.com'</span><span class="p">,</span> <span class="s1">'Guangxi'</span><span class="p">,</span> <span class="mi">20</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>会出现主键冲突错误：</p>
+
+<blockquote>
+  <p>ERROR 1062 (23000): Duplicate entry ‘1’ for key ‘PRIMARY’</p>
+</blockquote>
+
+<p>同样，往表里一次性插入多条数据，前面两条数据的nickname都为<code class="language-plaintext highlighter-rouge">zhangsan</code>。需要注意的是，nickname字段是有唯一索引约束的。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'zhangsan'</span><span class="p">,</span> <span class="s1">'17777778901'</span><span class="p">,</span> <span class="s1">'zhangsan@foxmail.com'</span><span class="p">,</span> <span class="s1">'Beijing'</span><span class="p">,</span> <span class="mi">18</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'zhangsan'</span><span class="p">,</span> <span class="s1">'16688990101'</span><span class="p">,</span> <span class="s1">'lisi@foxmail.com'</span><span class="p">,</span> <span class="s1">'Hangzhou'</span><span class="p">,</span> <span class="mi">28</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'wangwu'</span><span class="p">,</span> <span class="s1">'155784983939'</span><span class="p">,</span> <span class="s1">'wangwu@foxmail.com'</span><span class="p">,</span> <span class="s1">'Guangxi'</span><span class="p">,</span> <span class="mi">20</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>同样也会出现唯一性约束错误：</p>
+
+<blockquote>
+  <p>ERROR 1062 (23000): Duplicate entry ‘zhangsan’ for key ‘uk_username’</p>
+</blockquote>
+
+<p>以上两种出现唯一性约束错误之后，MySQL就不会执行后续的INSERT SQL，例如上面的<code class="language-plaintext highlighter-rouge">wangwu</code>就不会被执行。在批量执行INSERT SQL时，如何忽略某些INSERT操作发生的唯一性约束异常，而不影响后续的INSERT SQL的执行呢？这里记录两种实现方式。</p>
+
+<h3 id="2-使用insert-ignore-into">2. 使用<code class="language-plaintext highlighter-rouge">INSERT IGNORE INTO</code></h3>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">IGNORE</code>子句是MySQL对SQL标准的扩展。</p>
+</blockquote>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">INSERT</span> <span class="k">IGNORE</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'zhangsan'</span><span class="p">,</span> <span class="s1">'17777778901'</span><span class="p">,</span> <span class="s1">'zhangsan@foxmail.com'</span><span class="p">,</span> <span class="s1">'Beijing'</span><span class="p">,</span> <span class="mi">18</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">IGNORE</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'zhangsan'</span><span class="p">,</span> <span class="s1">'16688990101'</span><span class="p">,</span> <span class="s1">'lisi@foxmail.com'</span><span class="p">,</span> <span class="s1">'Hangzhou'</span><span class="p">,</span> <span class="mi">28</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">IGNORE</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'wangwu'</span><span class="p">,</span> <span class="s1">'155784983939'</span><span class="p">,</span> <span class="s1">'wangwu@foxmail.com'</span><span class="p">,</span> <span class="s1">'Guangxi'</span><span class="p">,</span> <span class="mi">20</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>已知nickname字段上有唯一索引约束，现在每条INSERT SQL都加上了<code class="language-plaintext highlighter-rouge">IGNORE</code>，如果用户昵称已经存在，就不执行插入；否则执行插入。这样就不会影响后续的INSERT SQL的执行。</p>
+
+<h3 id="3-使用insert-into--on-duplicate-key-update">3. 使用<code class="language-plaintext highlighter-rouge">INSERT INTO ... ON DUPLICATE KEY UPDATE</code></h3>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'zhangsan'</span><span class="p">,</span> <span class="s1">'17777778901'</span><span class="p">,</span> <span class="s1">'zhangsan@foxmail.com'</span><span class="p">,</span> <span class="s1">'Beijing'</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span> <span class="k">ON</span> <span class="n">DUPLICATE</span> <span class="k">KEY</span> <span class="k">UPDATE</span> <span class="n">age</span> <span class="o">=</span> <span class="n">age</span><span class="p">;</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'zhangsan'</span><span class="p">,</span> <span class="s1">'16688990101'</span><span class="p">,</span> <span class="s1">'lisi@foxmail.com'</span><span class="p">,</span> <span class="s1">'Hangzhou'</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span> <span class="k">ON</span> <span class="n">DUPLICATE</span> <span class="k">KEY</span> <span class="k">UPDATE</span> <span class="n">age</span> <span class="o">=</span> <span class="n">age</span><span class="p">;</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">my_user</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'wangwu'</span><span class="p">,</span> <span class="s1">'155784983939'</span><span class="p">,</span> <span class="s1">'wangwu@foxmail.com'</span><span class="p">,</span> <span class="s1">'Guangxi'</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="k">ON</span> <span class="n">DUPLICATE</span> <span class="k">KEY</span> <span class="k">UPDATE</span> <span class="n">age</span> <span class="o">=</span> <span class="n">age</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">INSERT INTO ... ON DUPLICATE KEY UPDATE</code>作用是，若INSERT发生了唯一性约束错误，那么就执行该条记录的更新操作；若没有发生唯一性约束错误，说明记录还未存在，直接执行插入操作。</p>
+
+<hr />
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by ExSimple.</p>
+</div>
+</html>

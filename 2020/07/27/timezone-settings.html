@@ -1,0 +1,107 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Linux时间/时区设置 | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>Linux时间/时区设置</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/Linux.html">#Linux</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;27 July 2020&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p>Linux中设置时间为东八区时间（北京时间）：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ln</span> <span class="nt">-sf</span> /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'Asia/Shanghai'</span> <span class="o">&gt;</span> /etc/timezone
+<span class="nv">$ </span><span class="nb">date</span> <span class="nt">-R</span>
+Mon, 27 Jul 2020 14:12:04 +0800
+</code></pre></div></div>
+
+<p>/etc/localtime文件描述的是本机时间；/etc/timezone文件描述的是本机所属的时区。/usr/share/zoneinfo目录下面存放的是全球各个时区/时间的文件：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> /usr/share/zoneinfo
+Africa      Atlantic   Chile    Eire     Factory  GMT-0      Iceland      Jamaica            
+America     Australia  CST6CDT  EST      GB       GMT+0      Indian       Japan             
+Antarctica  Brazil     Cuba     EST5EDT  GB-Eire  Greenwich  Iran         Kwajalein
+...
+</code></pre></div></div>
+
+<p>有时候在构建Docker镜像的时候，运行之后发现时间是UTC时间。这时可以在<code class="language-plaintext highlighter-rouge">Dockerfile</code>文件中加入以下内容来设置镜像运行时的时区为东八区：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RUN <span class="nb">ln</span> <span class="nt">-sf</span> /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN <span class="nb">echo</span> <span class="s1">'Asia/Shanghai'</span> <span class="o">&gt;</span> /etc/timezone
+</code></pre></div></div>
+
+<p>如果是Java应用，通过<code class="language-plaintext highlighter-rouge">echo 'Asia/Shanghai' &gt; /etc/timezone</code>已经正确设置了时区为东八区，那么代码里面就不需要对时区进行设置：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">TimeZone</span> <span class="n">timeZone</span> <span class="o">=</span> <span class="nc">TimeZone</span><span class="o">.</span><span class="na">getTimeZone</span><span class="o">(</span><span class="s">"Asia/Shanghai"</span><span class="o">);</span>
+<span class="nc">TimeZone</span><span class="o">.</span><span class="na">setDefault</span><span class="o">(</span><span class="n">timeZone</span><span class="o">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<p>参考：</p>
+<ul>
+  <li><a href="https://blog.csdn.net/alinyua/article/details/80944543">https://blog.csdn.net/alinyua/article/details/80944543</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by ExSimple.</p>
+</div>
+</html>
