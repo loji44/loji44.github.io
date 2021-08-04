@@ -56,7 +56,7 @@
 
 <p>如何让命令提交后不受本地关闭终端窗口/网络断开连接的干扰呢？下面举了一些例子， 您可以针对不同的场景选择不同的方式来处理这个问题。</p>
 
-<h3 id="一-nohupsetsid-命令">一、 nohup/setsid/&amp; 命令</h3>
+<h3 id="1-nohupsetsid-命令">1. <code class="language-plaintext highlighter-rouge">nohup/setsid/&amp;</code> 命令</h3>
 
 <p><strong>场景描述：</strong><br />
 如果只是临时有一个命令需要长时间运行，什么方法能最简便的保证它在后台稳定运行呢？<br />
@@ -72,7 +72,7 @@
 在Unix的早期版本中，每个终端都会通过modem和系统通讯。当用户logout时，modem就会挂断(hang up)电话。 同理，当modem断开连接时，就会给终端发送hangup信号来通知其关闭所有子进程。</p>
 </blockquote>
 
-<h4 id="1-nohup">1. nohup</h4>
+<h4 id="11-nohup">1.1 <code class="language-plaintext highlighter-rouge">nohup</code></h4>
 
 <p>nohup无疑是我们首先想到的办法。nohup的用途就是让提交的命令忽略hangup信号。先来看一下nohup的帮助信息：</p>
 
@@ -120,7 +120,7 @@ DESCRIPTION
 所以当执行的命令发生标准错误，那么这个错误也会输出到你指定的输出文件中，即output.log文件中。</p>
 </blockquote>
 
-<h4 id="2-setsid">2. setsid</h4>
+<h4 id="12-setsid">1.2 <code class="language-plaintext highlighter-rouge">setsid</code></h4>
 
 <p>nohup能通过忽略HUP信号来使我们的进程避免中途被中断。但如果我们换个角度思考，如果我们的进程不属于接受HUP信号的终端的子进程，那么自然也就不会受到该终端的HUP信号的影响了。setsid就能帮助我们做到这一点。让我们先来看一下 setsid 的帮助信息：</p>
 
@@ -166,7 +166,7 @@ LuzHo211   44158 41875  0 16:23 pts/10   00:00:00 <span class="nb">grep </span>U
 
 <p>可以看出我们的任务进程ID为44109，而其父进程ID为41875；41875就是我们当前终端的PID。</p>
 
-<h4 id="3-">3. &amp;</h4>
+<h4 id="13-">1.3 <code class="language-plaintext highlighter-rouge">&amp;</code></h4>
 
 <p>这里还有一个关于subshell的小技巧。我们知道，将一个或多个命名包含在“()”中就能让这些命令在子shell中运行中，从而扩展出很多有趣的功能，我们现在要讨论的就是其中之一。</p>
 
@@ -184,7 +184,7 @@ root     24650 24560  0 10:26 pts/3    00:00:00 <span class="nb">grep</span> <sp
 
 <p>从上例中可以看出，新提交的进程的父进程ID（PPID）为1（即init进程的PID），并不是当前终端的进程ID。因此并不属于当前终端的子进程，从而也就不会受到当前终端的HUP信号的影响了。</p>
 
-<h3 id="二disown-命令">二、disown 命令</h3>
+<h3 id="2-disown-命令">2. <code class="language-plaintext highlighter-rouge">disown</code> 命令</h3>
 
 <p><strong>场景描述：</strong><br />
 在提交命令之前，在命令前加上nohup或者setsid就可以避免HUP信号的影响。但是若我们未加任何处理就已经提交了命令，该如何补救才能让它避免HUP信号的影响呢？ <br />
@@ -269,7 +269,7 @@ root     25382 25296  0 11:13 pts/6    00:00:00 ping www.ibm.com
 root     25387 25296  0 11:16 pts/6    00:00:00 <span class="nb">grep</span> <span class="nt">--color</span><span class="o">=</span>auto ping
 </code></pre></div></div>
 
-<h3 id="三screen-命令">三、screen 命令</h3>
+<h3 id="3-screen命令">3. <code class="language-plaintext highlighter-rouge">screen</code>命令</h3>
 
 <p><strong>场景描述：</strong><br />
 我们已经知道了如何让进程免受HUP信号的影响，但是如果有大量这种命令需要在稳定的后台里运行，如何避免对每条命令都做这样的操作呢？ <br />
@@ -356,9 +356,11 @@ systemd─┬─AliYunDun───23<span class="k">*</span><span class="o">[{</
 
 <p>可以看到，使用了screen之后，我们所处的bash则变成了screen进程的子进程，而screen又是systemd的子进程。那么当ssh断开连接时，HUP信号自然不会影响到screen下面的子进程了。</p>
 
-<h3 id="四总结">四、总结</h3>
+<h3 id="4-总结">4. 总结</h3>
 
 <p>现在几种方法已经介绍完毕，我们可以根据不同的场景来选择不同的方案。nohup/setsid无疑是临时需要时最方便的方法，disown能帮助我们来事后补救当前已经在运行了的作业，而screen则是在大批量操作时不二的选择了。</p>
+
+<hr />
 
 
         </div>

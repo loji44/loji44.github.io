@@ -79,12 +79,12 @@
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">mv </span>jdk-8u221-linux-x64.tar.gz /usr/local/ <span class="o">&amp;&amp;</span> <span class="nb">cd</span> /usr/local/ <span class="o">&amp;&amp;</span> <span class="nb">tar</span> <span class="nt">-zxvf</span> jdk-8u221-linux-x64.tar.gz
 </code></pre></div></div>
 
-<p>解压之后将得到<code class="language-plaintext highlighter-rouge">jdk1.8.0_221</code>文件夹。<strong>即，JDK的安装路径为：<code class="language-plaintext highlighter-rouge">/usr/local/jdk1.8.0_221</code>，后面环境变量<code class="language-plaintext highlighter-rouge">JAVA_HOME</code>就是设置成JDK的安装路径。</strong></p>
+<p>解压之后将得到<code class="language-plaintext highlighter-rouge">jdk1.8.0_221</code>文件夹。即，JDK的安装路径为：<code class="language-plaintext highlighter-rouge">/usr/local/jdk1.8.0_221</code>，后面环境变量<code class="language-plaintext highlighter-rouge">JAVA_HOME</code>就是设置成JDK的安装路径。</p>
 
 <p>配置Java环境变量：</p>
 
 <ul>
-  <li>在用户主目录下编辑<code class="language-plaintext highlighter-rouge">.bashrc</code>文件（<code class="language-plaintext highlighter-rouge">vim ~/.bashrc</code>），在文件尾部追加以下内容：</li>
+  <li>编辑<code class="language-plaintext highlighter-rouge">.bashrc</code>文件 (<code class="language-plaintext highlighter-rouge">vim ~/.bashrc</code>) 追加以下内容：</li>
 </ul>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/jdk1.8.0_221
@@ -102,8 +102,6 @@ Java<span class="o">(</span>TM<span class="o">)</span> SE Runtime Environment <s
 Java HotSpot<span class="o">(</span>TM<span class="o">)</span> 64-Bit Server VM <span class="o">(</span>build 25.221-b11, mixed mode<span class="o">)</span>
 </code></pre></div></div>
 
-<p><strong>出现以上信息说明成功安装JDK并且环境变量配置正确。否则需要检查环境变量的配置是否正确。</strong></p>
-
 <h3 id="3-mac-os系统安装jdk">3. Mac OS系统安装JDK</h3>
 
 <p>本文使用<code class="language-plaintext highlighter-rouge">macOS Mojave 10.14.6</code>系统版本来做演示；JDK版本为<code class="language-plaintext highlighter-rouge">1.8.0_221</code>。</p>
@@ -116,7 +114,7 @@ Java HotSpot<span class="o">(</span>TM<span class="o">)</span> 64-Bit Server VM 
 <p>配置Java环境变量：</p>
 
 <ul>
-  <li>打开终端，执行<code class="language-plaintext highlighter-rouge">/usr/libexec/java_home -V</code>指令来查看JDK的安装路径：</li>
+  <li>执行<code class="language-plaintext highlighter-rouge">/usr/libexec/java_home -V</code>查看JDK的安装路径：</li>
 </ul>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>/usr/libexec/java_home <span class="nt">-V</span>
@@ -129,7 +127,7 @@ Matching Java Virtual Machines <span class="o">(</span>1<span class="o">)</span>
 <p><strong><code class="language-plaintext highlighter-rouge">/Library/Java/JavaVirtualMachines/jdk1.8.0_221.jdk/Contents/Home</code>就是JDK的安装路径，后面配置<code class="language-plaintext highlighter-rouge">JAVA_HOME</code>环境变量会使用到该路径。</strong></p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">vim ~/.bash_profile</code>编辑用户主目录下的<code class="language-plaintext highlighter-rouge">.bash_profile</code>文件，在文件中加入以下内容：</li>
+  <li>执行命令<code class="language-plaintext highlighter-rouge">vim ~/.bash_profile</code>：追加以下内容：</li>
 </ul>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">JAVA_HOME</span><span class="o">=</span>/Library/Java/JavaVirtualMachines/jdk1.8.0_221.jdk/Contents/Home
@@ -140,7 +138,7 @@ Matching Java Virtual Machines <span class="o">(</span>1<span class="o">)</span>
 </code></pre></div></div>
 
 <ul>
-  <li>编辑完毕之后，执行命令：<code class="language-plaintext highlighter-rouge">source ~/.bash_profile</code>来使<code class="language-plaintext highlighter-rouge">.bash_profile</code>文件立即生效。</li>
+  <li>编辑完毕之后，执行<code class="language-plaintext highlighter-rouge">source ~/.bash_profile</code>来使<code class="language-plaintext highlighter-rouge">.bash_profile</code>文件立即生效。</li>
   <li>最后，检验一下JDK是否安装以及环境变量是否配置正确：</li>
 </ul>
 
@@ -149,8 +147,6 @@ java version <span class="s2">"1.8.0_221"</span>
 Java<span class="o">(</span>TM<span class="o">)</span> SE Runtime Environment <span class="o">(</span>build 1.8.0_221-b11<span class="o">)</span>
 Java HotSpot<span class="o">(</span>TM<span class="o">)</span> 64-Bit Server VM <span class="o">(</span>build 25.221-b11, mixed mode<span class="o">)</span>
 </code></pre></div></div>
-
-<p><strong>出现以上信息说明成功安装JDK并且环境变量配置正确。否则需要检查环境变量的配置是否正确。</strong></p>
 
 <h3 id="4-关于classpath环境变量">4. 关于CLASSPATH环境变量</h3>
 
@@ -164,6 +160,9 @@ Java HotSpot<span class="o">(</span>TM<span class="o">)</span> 64-Bit Server VM 
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>java <span class="nt">-classpath</span> ~/lib<span class="p">;</span>./fastjson-1.2.58.jar Test
 </code></pre></div></div>
+
+<hr />
+
 
         </div>
       </div>
