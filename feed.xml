@@ -1,0 +1,1103 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://loji44.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://loji44.github.io/" rel="alternate" type="text/html" /><updated>2021-08-05T15:45:25+08:00</updated><id>https://loji44.github.io/feed.xml</id><title type="html">Blog · Loji44</title><entry><title type="html">Java运行时利用反射获取方法的参数名称</title><link href="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html" rel="alternate" type="text/html" title="Java运行时利用反射获取方法的参数名称" /><published>2021-01-04T16:55:34+08:00</published><updated>2021-01-04T16:55:34+08:00</updated><id>https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name</id><content type="html" xml:base="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html">&lt;p&gt;JDK1.8之前，我们通过反射获取一个方法定义的参数名称时，无法获取到真实的参数名称，例如：&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SomeClass&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nickName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Integer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;something to be return&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在类编译之后，类的方法参数名称会丢失，通过反射机制获取到的参数名称变成了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;arg0&lt;/code&gt;、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;arg1&lt;/code&gt;这样的。有些场景例如MyBatis这种通过反射来获取Mapper接口上方法参数然后映射到XML的SQL语句上，就没法直接用：&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Mapper&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SomeMapper&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;SomePojo&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;selectOne&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nickName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;XML文件如下：&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;select&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;selectOne&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;resultMap=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;resultMap&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    SELECT * FROM `some_table` WHERE nick_name = #{nickName} AND mobile = #{mobile};
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/select&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;MyBatis通过反射获取到的参数名称其实是：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nickName -&amp;gt; arg0&lt;/code&gt;、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mobile -&amp;gt; arg1&lt;/code&gt; 这样就没法正确映射到XML的SQL中&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#{nickName}&lt;/code&gt;、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#{mobile}&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;所以需要使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Param&lt;/code&gt;注解来告诉MyBatis参数的真实名称，MyBatis才能正确映射参数：&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Mapper&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SomeMapper&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;SomePojo&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;selectOne&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;@Param&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;nickName&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nickName&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nd&quot;&gt;@Param&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;mobile&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;JDK1.8之后，除了通过在参数上打注解的方式，Java原生的反射机制新增了一个类用于描述方法上的参数：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;java.lang.reflect.Parameter&lt;/code&gt;。我们可以直接通过这个反射类获取到方法参数的真实名称。&lt;/p&gt;
+
+&lt;p&gt;前提是我们需要在编译的时候加入&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-parameter&lt;/code&gt;参数，让编译器在编译类的时候将方法的参数名称也打包到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.class&lt;/code&gt;文件里面。默认情况下&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-parameter&lt;/code&gt;是关闭的，如果需要此功能，需要手动开启：&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.apache.maven.plugins&lt;span class=&quot;nt&quot;&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;maven-compiler-plugin&lt;span class=&quot;nt&quot;&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;version&amp;gt;&lt;/span&gt;3.8.1&lt;span class=&quot;nt&quot;&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;compilerArgs&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;compilerArg&amp;gt;&lt;/span&gt;-parameters&lt;span class=&quot;nt&quot;&gt;&amp;lt;/compilerArg&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/compilerArgs&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这样之后，就算我们不在参数上打&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Param&lt;/code&gt;注解，MyBatis也能获取到真实的参数名称&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nickName&lt;/code&gt;和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mobile&lt;/code&gt;。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;参考：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/kancy/p/10205036.html&quot; target=&quot;_blank&quot;&gt;https://www.cnblogs.com/kancy/p/10205036.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/xiewenfeng520/article/details/102515413&quot; target=&quot;_blank&quot;&gt;https://blog.csdn.net/xiewenfeng520/article/details/102515413&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.jianshu.com/p/4f1f7a9d595f&quot; target=&quot;_blank&quot;&gt;https://www.jianshu.com/p/4f1f7a9d595f&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="Java" /><summary type="html">JDK1.8之前，我们通过反射获取一个方法定义的参数名称时，无法获取到真实的参数名称，例如：</summary></entry><entry><title type="html">Spring事务为何没有生效？</title><link href="https://loji44.github.io/2020/09/04/spring-transaction-does-not-work.html" rel="alternate" type="text/html" title="Spring事务为何没有生效？" /><published>2020-09-04T11:36:26+08:00</published><updated>2020-09-04T11:36:26+08:00</updated><id>https://loji44.github.io/2020/09/04/spring-transaction-does-not-work</id><content type="html" xml:base="https://loji44.github.io/2020/09/04/spring-transaction-does-not-work.html">&lt;p&gt;最近在Review业务方的代码时发现使用了Spring事务：func方法中调用了save方法&lt;/p&gt;
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PojoDO&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;PojoDTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pojoDTO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; 
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;save&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pojoDTO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;save方法是一个事务方法，打了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Transactional&lt;/code&gt;注解：期望发生异常时自动回滚数据库&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Transactional&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rollbackFor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PojoDO&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;save&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;PojoDTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pojoDTO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ops&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;先给出结论：在func方法中直接通过调用save方法的方式，会导致save方法的事务不生效，发生异常时也不会回滚。这种事务方法的调用方式是错误的。&lt;/p&gt;
+
+&lt;h5 id=&quot;为什么事务会失效&quot;&gt;为什么事务会失效？&lt;/h5&gt;
+
+&lt;p&gt;首先要知道，Spring事务本质就是通过动态代理给我们的事务方法织入异常处理的逻辑，并在发生异常时执行&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ROLLBACK&lt;/code&gt;回滚数据库状态。例如我们有个OrderService接口：&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Service&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderServiceImpl&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderService&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Transactional&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rollbackFor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;createOrder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ops&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Spring在启动的时候扫描到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Service&lt;/code&gt;注解，会为类创建实例对象并加入到IoC容器中。但是由于Spring扫描到OrderServiceImpl的createOrder方法上有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Transactional&lt;/code&gt;注解，于是Spring框架知道这是一个事务方法，所以会为OrderServiceImpl生成一个代理类来拦截OrderServiceImpl中的所有方法并将该代理类实例添加到IoC容器中。&lt;/p&gt;
+
+&lt;p&gt;所以我们在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowired&lt;/code&gt;这个OrderService的时候，实际上拿到的是OrderServiceImpl的代理类的实例，而不是OrderServiceImpl类的实例：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020-09/proxy-instance.png&quot; alt=&quot;proxy-instance.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;因为createOrder上有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Transactional&lt;/code&gt;注解，所以Spring在代理类中对这个方法进行了增强：在反射调用invoke进行&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;try...catch&lt;/code&gt;，并在catch到异常的时候进行数据库&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ROLLBACK&lt;/code&gt;操作。&lt;/p&gt;
+
+&lt;p&gt;所以Spring事务的是否生效，取决于我们是否是通过「代理类的对象实例」来进行方法的调用。例如最上面提到的例子，直接在createDefaultSob方法中调用了save这个事务方法，这种调用方式是不会走代理调用的，所以事务也根本不会生效。我们应该通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xxxService.method&lt;/code&gt;这种调用方式，才能使事务生效：&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Service&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderServiceImpl&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderService&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Autowired&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderService&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;orderService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;orderService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;createOrder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;nd&quot;&gt;@Transactional&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rollbackFor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;createOrder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ops&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;因为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowired private OrderService orderService;&lt;/code&gt;注入的是代理类对象，所以在使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;orderService.createOrder()&lt;/code&gt;调用时能正确走到事务的逻辑。&lt;/p&gt;
+
+&lt;p&gt;除了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xxxService.method&lt;/code&gt;这种调用方式，我们也可以通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@EnableAspectJAutoProxy&lt;/code&gt;注解，将代理类暴露到ThreadLocal中，然后通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AopContext.currentProxy()&lt;/code&gt;来获取当前类的代理对象：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020-09/enableAspectJAutoProxy.png&quot; alt=&quot;enableAspectJAutoProxy.png&quot; /&gt;
+&lt;img src=&quot;/static/image/2020-09/aop-context.png&quot; alt=&quot;aop-context.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;但是注意，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@EnableAspectJAutoProxy(exposeProxy = true)&lt;/code&gt;不能保证一定能够正确工作：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020-09/EnableAspectJAutoProxy-exposeProxy.png&quot; alt=&quot;EnableAspectJAutoProxy-exposeProxy.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;如果直接调用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;createOrder()&lt;/code&gt;就没有走代理，直接走的普通方法调用：&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Service&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderServiceImpl&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderService&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Autowired&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;OrderService&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;orderService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;createOrder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;nd&quot;&gt;@Transactional&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rollbackFor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;createOrder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ops&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这样一来，Spring的事务就失效了。没有正确走代理调用是Spring事务不起作用的情况之一。&lt;/p&gt;
+
+&lt;p&gt;我们在使用Spring事务的时候，想要使Spring事务正常工作，可能还需要注意以下几点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;包含&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Transactional&lt;/code&gt;注解的类必须要被Spring IoC容器管理，否则Spring没法扫描到该Bean为其生成代理类；&lt;/li&gt;
+  &lt;li&gt;要为数据源配置「事务管理器」：PlatformTransactionManager；&lt;/li&gt;
+  &lt;li&gt;要确保我们的数据库操作的表是支持事务的，例如InnoDB支持事务，而MyISAM的数据表就不支持事务；&lt;/li&gt;
+  &lt;li&gt;方法的异常不能自己try…catch消化掉，否则Spring事务没法感知到你的方法抛了异常，也就不会回滚；&lt;/li&gt;
+  &lt;li&gt;事务的rollbackFor异常类型配置错误，例如配置rollbackFor=SQLException.class，但是你在方法中却抛出BuzzException.class异常，异常类型不匹配也无法让Spring事务感知到；&lt;/li&gt;
+  &lt;li&gt;Spring事务传播机制要配置正确，例如：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Service&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Test&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Autowired&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Test&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;nd&quot;&gt;@Transactional&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;propagation&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Propagation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;REQUIRED&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;method1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;method2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;nd&quot;&gt;@Transactional&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;propagation&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Propagation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;NOT_SUPPORTED&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;method2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;..&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ops&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;method2的事务传播机制是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Propagation.NOT_SUPPORTED&lt;/code&gt;，即不支持事务。如果当前存在事务，它会挂起当前事务，并以非事务的方式执行method2。执行完method2再恢复method1的事务。在这个例子中，method2就不会以事务方式执行，发生异常也不会回滚method2中涉及到的数据库操作。&lt;/p&gt;
+
+&lt;hr /&gt;</content><author><name></name></author><category term="Java" /><category term="Spring" /><summary type="html">最近在Review业务方的代码时发现使用了Spring事务：func方法中调用了save方法 @Override public PojoDO func(PojoDTO pojoDTO) { ... return save(pojoDTO); }</summary></entry><entry><title type="html">Redis缓存雪崩/穿透/击穿</title><link href="https://loji44.github.io/2020/07/30/redis-caching-problems.html" rel="alternate" type="text/html" title="Redis缓存雪崩/穿透/击穿" /><published>2020-07-30T12:09:20+08:00</published><updated>2020-07-30T12:09:20+08:00</updated><id>https://loji44.github.io/2020/07/30/redis-caching-problems</id><content type="html" xml:base="https://loji44.github.io/2020/07/30/redis-caching-problems.html">&lt;h3 id=&quot;1-redis缓存雪崩&quot;&gt;1. Redis缓存雪崩&lt;/h3&gt;
+
+&lt;p&gt;当缓存服务器宕机或者大量缓存key同时（或者说集中在某个时间段）过期了，大量的请求会在短时间内直接打到DB上，导致DB压力过大，严重的可能会造成DB挂掉。这种情况叫做缓存雪崩。&lt;/p&gt;
+
+&lt;p&gt;针对Redis缓存雪崩，解决方案如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;生产环境避免单机Redis，做集群高可用，主从+哨兵，Redis cluster，避免缓存全线崩盘。&lt;/li&gt;
+  &lt;li&gt;Redis开启持久化，发生宕机重启之后快速恢复数据。&lt;/li&gt;
+  &lt;li&gt;采用多级缓存：本地缓存 + hystrix限流&amp;amp;降级，避免一级Redis缓存不可用导致DB被压垮。请求进来先查本地缓存，本地缓存没命中再查Redis，两级缓存都没有再查DB。同时还可以针对服务接口能力做限流&amp;amp;降级处理，如果请求QPS超过了服务接口本身所能承受的数量，走服务降级，例如直接返回一些默认值、友好提示或者空白页面等。&lt;/li&gt;
+  &lt;li&gt;针对大量缓存key同时过期的情况，简单的做法就是在每个key基础过期时间之上加一个随机值，例如1~5分钟的随机时间，让key的过期时间尽量分散。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;2-redis缓存击穿&quot;&gt;2. Redis缓存击穿&lt;/h3&gt;
+
+&lt;p&gt;某个非常热点的key，访问非常频繁，处于高并发访问的情况。在这个key过期的瞬间，大量请求直接打到DB上造成DB压力很大。这种情况叫做缓存击穿。&lt;/p&gt;
+
+&lt;p&gt;针对Redis缓存击穿，解决方案如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;对load DB的操作加互斥锁（mutex），保证只有一个线程去查数据库并将数据更新到缓存中。其他请求进来，抢不到锁可以循环等待一段时间再重试。&lt;/li&gt;
+  &lt;li&gt;热点数据设置永不过期。永不过期可以有两层意思：「物理」不过期，实际没有设置过期时间；「逻辑」不过期，redis设置某个key的时候不设置过期时间，但是会通过另一个timeKey来维护这个key的过期时间。每次查询key都会先查询timeKey，如果发现快过期或者已过期，就通过后台线程去更新这个value。这种做法可能会存在短暂的数据不一致，但是可以做得“很平滑”，不会阻塞用户请求，用户体验很好。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;3-redis缓存穿透&quot;&gt;3. Redis缓存穿透&lt;/h3&gt;
+
+&lt;p&gt;缓存穿透是指请求一些一定不存在的key，请求会直接打到DB上。有些人利用这些系统中不存在的key进行恶意请求攻击。解决方案如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;采用布隆过滤器对系统中所有数据哈希到一个足够大的bitmap中，Redis的bitmap数据结构就很合适。请求进来会先经过布隆过滤器，过滤掉一些恶意请求。&lt;/li&gt;
+  &lt;li&gt;采用空值缓存：如果缓存没命中，再去查询DB，DB也没命中说明数据库中不存在这条数据。这时可以构建一个空值保存到缓存中，设置一个较小的过期时间（例如5分钟），这样可以有效过滤恶意请求，保护DB。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;</content><author><name></name></author><category term="Redis" /><summary type="html">1. Redis缓存雪崩</summary></entry><entry><title type="html">无网络环境下使用阿里arthas诊断工具</title><link href="https://loji44.github.io/2020/07/27/arthas-run-without-network.html" rel="alternate" type="text/html" title="无网络环境下使用阿里arthas诊断工具" /><published>2020-07-27T15:20:00+08:00</published><updated>2020-07-27T15:20:00+08:00</updated><id>https://loji44.github.io/2020/07/27/arthas-run-without-network</id><content type="html" xml:base="https://loji44.github.io/2020/07/27/arthas-run-without-network.html">&lt;p&gt;最近排查一个线上问题，有个第三方公司服务启动后，访问的时候总是报数据库连接失败。由于是第三方服务，没法增加一些日志进行观察，所以使用阿里的arthas在线诊断工具进行排查。服务部署在客户的机房中，不允许连接外部网络，所以手动下载&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;arthas-boot.jar&lt;/code&gt;并通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scp&lt;/code&gt;方式上传到目标机器的方式去运行。&lt;/p&gt;
+
+&lt;p&gt;根据&lt;a href=&quot;https://alibaba.github.io/arthas/install-detail.html&quot; target=&quot;_blank&quot;&gt;arthas官网安装教程&lt;/a&gt;，下载&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;arthas-boot.jar&lt;/code&gt;，然后&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scp&lt;/code&gt;上传到目标主机（客户的机器）：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;curl &lt;span class=&quot;nt&quot;&gt;-O&lt;/span&gt; https://alibaba.github.io/arthas/arthas-boot.jar
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;scp &lt;span class=&quot;nt&quot;&gt;-rp&lt;/span&gt; arthas-boot.jar appweb@192.168.100.4:/appweb/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;执行&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;java -jar arthas-boot.jar&lt;/code&gt;，运行结果如下图所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020/arthas-run.png&quot; alt=&quot;arthas-run&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;原来&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;arthas-boot.jar&lt;/code&gt;并不是全量包，它会在启动的时候先去阿里Maven仓库下载一些jar包依赖；如果Maven下载失败，那么它会检查本地是否有jar包依赖文件，例如图中的日志：&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[ERROR] Can not find Arthas under local: /root/.arthas/lib&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;所以解决方案可以这样：在我的机器上（可联外网），先运行&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;java -jar arthas-boot.jar&lt;/code&gt;下载得到一个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.arthars&lt;/code&gt;文件夹，里面存放的就是arthas-boot.jar所需的一些jar包依赖。&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.arthars&lt;/code&gt;文件夹会默认在用户主目录下生成。&lt;/p&gt;
+
+&lt;p&gt;最后将&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.arthas&lt;/code&gt;文件夹也&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scp&lt;/code&gt;传送到客户的目标机器，即可完成。&lt;/p&gt;
+
+&lt;hr /&gt;</content><author><name></name></author><category term="Java" /><category term="Arthas" /><summary type="html">最近排查一个线上问题，有个第三方公司服务启动后，访问的时候总是报数据库连接失败。由于是第三方服务，没法增加一些日志进行观察，所以使用阿里的arthas在线诊断工具进行排查。服务部署在客户的机房中，不允许连接外部网络，所以手动下载arthas-boot.jar并通过scp方式上传到目标机器的方式去运行。</summary></entry><entry><title type="html">Linux时间/时区设置</title><link href="https://loji44.github.io/2020/07/27/timezone-settings.html" rel="alternate" type="text/html" title="Linux时间/时区设置" /><published>2020-07-27T14:08:45+08:00</published><updated>2020-07-27T14:08:45+08:00</updated><id>https://loji44.github.io/2020/07/27/timezone-settings</id><content type="html" xml:base="https://loji44.github.io/2020/07/27/timezone-settings.html">&lt;p&gt;Linux中设置时间为东八区时间（北京时间）：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;ln&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-sf&lt;/span&gt; /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Asia/Shanghai'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; /etc/timezone
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;date&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-R&lt;/span&gt;
+Mon, 27 Jul 2020 14:12:04 +0800
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;/etc/localtime文件描述的是本机时间；/etc/timezone文件描述的是本机所属的时区。/usr/share/zoneinfo目录下面存放的是全球各个时区/时间的文件：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;ls&lt;/span&gt; /usr/share/zoneinfo
+Africa      Atlantic   Chile    Eire     Factory  GMT-0      Iceland      Jamaica            
+America     Australia  CST6CDT  EST      GB       GMT+0      Indian       Japan             
+Antarctica  Brazil     Cuba     EST5EDT  GB-Eire  Greenwich  Iran         Kwajalein
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;有时候在构建Docker镜像的时候，运行之后发现时间是UTC时间。这时可以在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dockerfile&lt;/code&gt;文件中加入以下内容来设置镜像运行时的时区为东八区：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;RUN &lt;span class=&quot;nb&quot;&gt;ln&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-sf&lt;/span&gt; /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Asia/Shanghai'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; /etc/timezone
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;如果是Java应用，通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;echo 'Asia/Shanghai' &amp;gt; /etc/timezone&lt;/code&gt;已经正确设置了时区为东八区，那么代码里面就不需要对时区进行设置：&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;TimeZone&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeZone&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;TimeZone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getTimeZone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Asia/Shanghai&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nc&quot;&gt;TimeZone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setDefault&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timeZone&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;参考：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/alinyua/article/details/80944543&quot;&gt;https://blog.csdn.net/alinyua/article/details/80944543&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>PandaQ</name></author><category term="Linux" /><summary type="html">Linux中设置时间为东八区时间（北京时间）：</summary></entry><entry><title type="html">Redis持久化之rdb和aof</title><link href="https://loji44.github.io/2020/06/01/redis-persistence.html" rel="alternate" type="text/html" title="Redis持久化之rdb和aof" /><published>2020-06-01T20:14:31+08:00</published><updated>2020-06-01T20:14:31+08:00</updated><id>https://loji44.github.io/2020/06/01/redis-persistence</id><content type="html" xml:base="https://loji44.github.io/2020/06/01/redis-persistence.html">&lt;p&gt;Redis虽然是内存数据库，但是为了一定程度的数据可靠性也做了一些持久化的方案，确保Redis机器宕机或者断电重启之后，能从备份数据中恢复宕机、掉电前的数据。&lt;/p&gt;
+
+&lt;p&gt;Redis目前有两种持久化方案：RDB持久化和AOF持久化。&lt;/p&gt;
+
+&lt;h3 id=&quot;1-redis-rdb持久化&quot;&gt;1. Redis RDB持久化&lt;/h3&gt;
+
+&lt;p&gt;RDB全称是Redis DataBase。是Redis最早支持的一种持久化方式，也是Redis默认的持久化方案。&lt;/p&gt;
+
+&lt;p&gt;RDB持久化是一种生成「快照」数据的方式，它会根据配置文件（&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;redis.conf&lt;/code&gt;）中的持久化策略在合适的时机自动去dump整个Redis服务器在「某个时刻」的中的全量内存数据，即某个时刻的快照数据。并将快照数据保存在一个名叫&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dump.rdb&lt;/code&gt;的文件中，这些快照数据以二进制格式压缩存储。&lt;/p&gt;
+
+&lt;h5 id=&quot;11-rdb持久化策略配置&quot;&gt;1.1 RDB持久化策略配置&lt;/h5&gt;
+
+&lt;p&gt;我们可以在Redis服务器的配置文件中以&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;save&lt;/code&gt;指令配置RDB持久化策略，如下所示：&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# redis.conf
+# save &amp;lt;seconds&amp;gt; &amp;lt;changes&amp;gt;
+
+save 900 1     # 900秒（15分钟）内，如果至少有一个key被更改则触发RDB
+save 300 10    # 300秒（5分钟）内，如果至少有一个key被更改则触发RDB
+save 60 10000  # 60秒内，如果至少发生10000个key被更改则触发RDB
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;如果想关闭RDB持久化，只需要将配置文件中的save配置项改成：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;save &quot;&quot;&lt;/code&gt;即可：&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# redis.conf
+# save &amp;lt;seconds&amp;gt; &amp;lt;changes&amp;gt;
+
+save &quot;&quot;  # save &quot;&quot; 表示关闭RDB持久化
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;12-rdb持久化手动触发执行&quot;&gt;1.2 RDB持久化手动触发执行&lt;/h5&gt;
+
+&lt;p&gt;写在redis.conf文件中的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;save &amp;lt;seconds&amp;gt; &amp;lt;changes&amp;gt;&lt;/code&gt;配置项可以让Redis自动触发RDB持久化。但是有时候我们也可能需要手动触发一下RDB持久化，这时候可以使用以下两条Redis命令：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SAVE&lt;/code&gt;：SAVE命令直接在当前Redis进程中执行RDB持久化操作，会阻塞掉来自客户端的所有请求，直到RDB持久化完成。&lt;strong&gt;生产环境慎用！&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BGSAVE&lt;/code&gt;：BGSAVE命令会调用fork创建一个子进程来进行RDB持久化操作。fork完毕之后，子进程会在后台进行RDB持久化，不会影响Redis主进程处理客户端的请求。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;生产环境手动触发RDB持久化，首选BGSAVE命令。若BGSAVE产生的后台子进程出现问题时，则可以考虑用SAVE命令来兜底。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h5 id=&quot;13-rdb快照数据的恢复&quot;&gt;1.3 RDB快照数据的恢复&lt;/h5&gt;
+
+&lt;p&gt;Redis启动时，若发现数据目录下有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dump.rdb&lt;/code&gt;文件就会自动加载该文件中的数据内容到内存中。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020/rdb-load.png&quot; alt=&quot;rdb-load.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dump.rdb&lt;/code&gt;记录的就是某个时刻Redis服务器内存中的全量物理数据，并以二进制格式压缩存储。所以加载到内存也就完成了数据的恢复。&lt;/p&gt;
+
+&lt;h5 id=&quot;14-rdb持久化方式总结&quot;&gt;1.4 RDB持久化方式总结&lt;/h5&gt;
+
+&lt;p&gt;RDB持久化方式关注点在于&lt;strong&gt;快照数据&lt;/strong&gt;，每次触发RDB持久化都是全量保存某个时间点上的所有内存数据。就这一点而言，它很适合备份场景，用于灾难恢复。它有如下优点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;RDB持久化生成的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dump.rdb&lt;/code&gt;文件是一个经过压缩的紧凑的二进制文件，加载/恢复速度很快。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;RDB持久化也有缺点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;没法做到实时/秒级持久化，因为每次RDB持久化都会fork一个子进程来生成快照数据，fork属于重量级操作，频繁fork会让cpu和内存吃不消，影响Redis性能。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;2-redis-aof持久化&quot;&gt;2. Redis AOF持久化&lt;/h3&gt;
+
+&lt;p&gt;Redis &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v1.1&lt;/code&gt;开始支持另一种持久化方式：AOF（&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Append-only File&lt;/code&gt;）。相比RDB持久化记录物理数据的方式，AOF文件记录的不是物理数据，而是记录Redis中的每条&lt;strong&gt;写命令&lt;/strong&gt;，例如&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET&lt;/code&gt;，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DEL&lt;/code&gt;等。每当有写操作发生，这个写操作的命令会被追加到AOF文件中：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;我们可以这么理解：RDB记录的是物理日志，AOF记录的是逻辑日志，是一条条Redis写操作命令。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;这个有点类似MySQL中的redo log和binlog。redo log记录的也是物理日志，binlog记录的是一条条SQL，是逻辑日志。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h5 id=&quot;21-aof持久化策略配置&quot;&gt;2.1 AOF持久化策略配置&lt;/h5&gt;
+
+&lt;p&gt;Redis默认不开启AOF持久化，我们需要在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;redis.conf&lt;/code&gt;配置文件中配置&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly yes&lt;/code&gt;来开启：&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# redis.conf
+appendonly yes        # yes表示开启AOF持久化；no表示关闭AOF持久化
+appendfsync everysec  # AOF持久化策略：no、always、everysec
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendfsync&lt;/code&gt;参数对Redis的性能有着重要的影响：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;always&lt;/code&gt;：每次写操作都会调用fsync将写操作命令同步到磁盘的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件中，这种方式性能最差，但是数据可靠性最强；&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;no&lt;/code&gt;：每次Redis写操作后不会主动调用fsync同步到磁盘，只是写入缓冲区，由操作系统内核自动将缓冲区数据持久化到磁盘。Linux内核默认以每「30秒/次」的频率将文件缓冲区的数据刷新到磁盘。这种方式性能最好，但是数据可靠性最差；&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;everysec&lt;/code&gt;：everysec是权衡了性能和数据可靠性之后的一种折衷方式，即由Redis后台线程每秒调用fsync将缓冲区数据持久化到磁盘。这种方式兼顾了性能和数据的可靠性，是AOF默认的配置方式。采用这种方式，遇到宕机或者掉电我们最多丢失1秒的数据。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;22-aof数据的加载恢复&quot;&gt;2.2 AOF数据的加载恢复&lt;/h5&gt;
+
+&lt;p&gt;如果同时开启RDB和AOF持久化，即数据目录中会同时存在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dump.rdb&lt;/code&gt;和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件，Redis在启动的时候会优先使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;来恢复数据，因为从AOF文件中恢复的数据集是最完整也是最新的。同样，在启动日志中体现了AOF文件的加载：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020/aof-load.png&quot; alt=&quot;aof-load.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;不像RDB数据的恢复，直接load到内存即可。AOF的恢复需要读取&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件并逐条执行该文件中记录的每一条Redis命令来达到重建整个数据集的目的。如果数据集很大，那么AOF的恢复会比RDB慢很多。&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件只是一个文本文件，里面记录着每次Redis的写操作命令。&lt;/p&gt;
+
+&lt;p&gt;例如我执行&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET test_key hello&lt;/code&gt;之后，查看&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件内容如下所示：&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;*2
+$6
+SELECT
+$1
+0
+*3
+$3
+SET
+$8
+test_key
+$5
+hello
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;字符&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;含义&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;*3&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;表示此条Redis命令包含3个参数&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;$3&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;表示第一个参数的长度为3，即&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET&lt;/code&gt;占用3个字符&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;$8&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;表示第二个参数的长度为8，即&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;test_key&lt;/code&gt;占用8个字符&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;$5&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;表示第三个参数的长度为5，即&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hello&lt;/code&gt;占用5个字符&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;现在我执行一个删除操作，删除刚才的key：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DEL test_key&lt;/code&gt;，此时&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件内容：&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;*2
+$6
+SELECT
+$1
+0
+*3
+$3
+SET
+$8
+test_key
+$5
+hello
+*2
+$6
+SELECT
+$1
+0
+*2
+$3
+DEL
+$8
+test_key
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;发现AOF文件除了记录我们之前的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET&lt;/code&gt;，也记录了我们的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DEL&lt;/code&gt;写操作命令，这就是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Append-only&lt;/code&gt;，所有的写操作命令只是追加到AOF文件中。所以当Redis宕机重启之后，加载&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件执行里面的一条条写操作命令之后，得到的数据集就是Redis宕机前的数据集，从而恢复数据。&lt;/p&gt;
+
+&lt;p&gt;若设置一个自动过期的key，AOF文件会怎样记录？例如：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET ttl_key ttl_value EX 300&lt;/code&gt;，设置&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ttl_key&lt;/code&gt;的过期时间为5分钟，查看&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件：&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;*3
+$9
+PEXPIREAT
+$7
+ttl_key
+$13
+1591017706735
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET ttl_key ttl_value EX 300&lt;/code&gt;命令会被转换成另一种形式记录在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件中，变成了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PEXPIREAT ttl_key 1591017706735&lt;/code&gt;。这很合理，因为当重启恢复数据后，Redis重新构建这条数据的时候可能已经过期，也就会自动删除；如果AOF不做转换而是原样记录写操作命令，那么当恢复数据的时候，就有可能会产生数据不一致。&lt;/p&gt;
+
+&lt;h5 id=&quot;23-aof日志重写机制&quot;&gt;2.3 AOF日志重写机制&lt;/h5&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;只是一个文本文件，而且Redis写操作命令会不断地追加到文件尾部。随着时间的推移，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件的体积会越来越大，宕机重启恢复数据时，耗时也会越来越大。所以才有了AOF日志的重写机制。&lt;/p&gt;
+
+&lt;p&gt;所谓AOF日志重写，就是将&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件中的多条指令操作合并成一条指令的操作，节省存储空间，也节省启动恢复数据的耗时。例如，多次对同一个key执行&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INCR&lt;/code&gt;操作，AOF文件中也会依次记录多次&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INCR&lt;/code&gt;。通过AOF日志重写，针对这个key的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INCR&lt;/code&gt;操作可以合并成一个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET&lt;/code&gt;操作：100次&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INCR count_key&lt;/code&gt;可以重写成一次&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SET count_key 100&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;AOF日志重写能保证AOF日志文件数据的安全，如何实现数据安全呢？原理如下图所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020/aof-rewrite-flow.png&quot; alt=&quot;aof-rewrite-flow.png&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;主进程执行fork操作，创建一个子进程；&lt;/li&gt;
+  &lt;li&gt;子进程遍历内存中的数据，转换成写操作命令并写入一个临时文件；&lt;/li&gt;
+  &lt;li&gt;客户端的实时写命令请求，主进程还是会持久化到原来的AOF文件，&lt;strong&gt;同时也将写命令写入一个AOF重写内存缓存中&lt;/strong&gt;，这样即使在重写过程中发生宕机，也能确保原来的AOF文件是安全的；&lt;/li&gt;
+  &lt;li&gt;子进程重写完毕，给主进程发送一个通知；主进程收到通知后，将&lt;strong&gt;AOF内存缓存&lt;/strong&gt;中的写操作命令追加到这个AOF临时文件中；&lt;/li&gt;
+  &lt;li&gt;Redis原子地将AOF临时文件重命名为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;，替换原AOF文件，完成！&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如何触发AOF日志重写呢？&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;(1) 手动触发AOF日志重写&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;在Redis &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v2.4&lt;/code&gt;之前，只能通过&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BGREWRITEAOF&lt;/code&gt;命令手动触发AOF日志重写。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020/aof-rewrite.png&quot; alt=&quot;aof-rewrite.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;查看&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appendonly.aof&lt;/code&gt;文件发现重写之后，文件出现了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;REDIS0009ú redis-ver^E5.0.5ú&lt;/code&gt;字符，跟&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dump.rdb&lt;/code&gt;中的字符一样，说明AOF重写会对文件内容进行压缩存储。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;(2) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;redis.conf&lt;/code&gt;配置AOF自动重写策略&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Redis &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v2.4&lt;/code&gt;及之后的版本可以通过配置文件来配置AOF日志自动重写的策略。&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# redis.conf
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;auto-aof-rewrite-percentage&lt;/code&gt;：Redis会记录上一次AOF重写之后的文件大小（如果没有执行过AOF重写，那么以Redis重启后AOF文件大小为基准），如果发现AOF文件当前大小大于上一次文件大小的指定百分比，例如上一次重写之后文件大小为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;100MB&lt;/code&gt;，指定百分比为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;100%&lt;/code&gt;，那么当前文件大小大于&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;100MB + 100MB*100% = 200MB&lt;/code&gt;的时候，就会触发AOF重写；&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;auto-aof-rewrite-min-size&lt;/code&gt;：这个参数是指定触发AOF重写的AOF文件大小的最小值，超过这个值才会触发AOF重写；如果AOF文件大小小于这个值，就算超过了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;auto-aof-rewrite-percentage&lt;/code&gt;百分比，也不会触发重写。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;24-aof日志文件损坏怎么办&quot;&gt;2.4 AOF日志文件损坏怎么办？&lt;/h5&gt;
+
+&lt;p&gt;Redis在运行过程中可能会遇到突发的宕机、停电，如果这时候正在写AOF文件，就有可能没写完成，发生文件损坏（corrupt）。Redis在重启之后，发现AOF文件损坏会拒绝加载这个AOF文件。这个时候可以这样做：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;先为现有的AOF文件创建一个备份，备份很重要；&lt;/li&gt;
+  &lt;li&gt;使用Redis自带的程序工具&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;redis-check-aof&lt;/code&gt;对损坏的AOF文件进行修复：&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;redis-check-aof --fix appendonly.aof&lt;/code&gt;；&lt;/li&gt;
+  &lt;li&gt;（可选）使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;diff -u&lt;/code&gt;对比修复后的文件和原始文件的备份，查看两个文件之间的不同之处；&lt;/li&gt;
+  &lt;li&gt;重启Redis，等待Redis重新加载AOF文件进行数据恢复。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;25-aof持久化方式总结&quot;&gt;2.5 AOF持久化方式总结&lt;/h5&gt;
+
+&lt;p&gt;AOF持久化保存的是一种逻辑日志，即记录的是一条条写操作的命令，而不是像RDB持久化那样记录物理数据。它在恢复数据的时候，是直接执行AOF文件中的一条条Redis命令来重建整个数据集的。&lt;/p&gt;
+
+&lt;p&gt;AOF持久化的优点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;能够做到实时/秒级别的持久化，数据的实时性更好。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;AOF持久化优点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;AOF文件体积会比RDB大，如果数据集很大，AOF重写和AOF文件加载/恢复都将是一个很耗资源和耗时的操作。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;3-写在最后&quot;&gt;3. 写在最后&lt;/h3&gt;
+
+&lt;p&gt;Redis的两种持久化方式各有特色，我们生产环境一般不会只用其中一种，而是同时使用两种。&lt;/p&gt;
+
+&lt;p&gt;例如RDB可以结合&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cron&lt;/code&gt;定时任务去定期生成备份数据，用于灾难恢复；同时，AOF因为支持实时持久化，它记录的数据集是最实时的，所以我们也会同时开启AOF持久化，应对一些对数据实时完整性要求较高的场景。但是AOF也可能会损坏无法修复，所以两种方式并用对数据才是最安全的。&lt;/p&gt;
+
+&lt;hr /&gt;</content><author><name></name></author><category term="Redis" /><summary type="html">Redis虽然是内存数据库，但是为了一定程度的数据可靠性也做了一些持久化的方案，确保Redis机器宕机或者断电重启之后，能从备份数据中恢复宕机、掉电前的数据。</summary></entry><entry><title type="html">MySQL INSERT IGNORE INTO</title><link href="https://loji44.github.io/2020/05/30/sql-insert-ignore.html" rel="alternate" type="text/html" title="MySQL INSERT IGNORE INTO" /><published>2020-05-30T11:44:51+08:00</published><updated>2020-05-30T11:44:51+08:00</updated><id>https://loji44.github.io/2020/05/30/sql-insert-ignore</id><content type="html" xml:base="https://loji44.github.io/2020/05/30/sql-insert-ignore.html">&lt;p&gt;开发中经常会一次性往一个里INSERT多条数据，但是当某条INSERT SQL因为与表中发生&lt;strong&gt;主键冲突&lt;/strong&gt;，或者与某个定义为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;UNIQUE KEY&lt;/code&gt;的字段发生&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Duplicate entry&lt;/code&gt;错误时，MySQL会放弃执行后续的INSERT SQL。而我们希望如果某条INSERT发生了唯一性约束的错误，那么这条INSERT不插入数据即可，不要影响后面的其他INSERT语句的执行。&lt;/p&gt;
+
+&lt;h3 id=&quot;1-需求描述&quot;&gt;1. 需求描述&lt;/h3&gt;
+
+&lt;p&gt;有张表的结构如下所示：&lt;/p&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;CREATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;TABLE&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;`my_user`&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;`id`&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;11&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;unsigned&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;NOT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;NULL&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AUTO_INCREMENT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;COMMENT&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'自增ID'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;`nickname`&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;varchar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;DEFAULT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;NULL&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;COMMENT&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'用户昵称'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;`mobile`&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;varchar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;11&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;DEFAULT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;NULL&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;COMMENT&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'手机号码'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;`email`&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;varchar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;DEFAULT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;NULL&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;COMMENT&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'邮箱地址'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;`address`&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;varchar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;DEFAULT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;NULL&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;COMMENT&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'居住地址'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;`age`&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;tinyint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;unsigned&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;DEFAULT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;NULL&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;COMMENT&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'用户年龄'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;PRIMARY&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;KEY&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;`id`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;UNIQUE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;KEY&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;`uk_nickname`&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;`nickname`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ENGINE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;InnoDB&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;DEFAULT&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CHARSET&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;utf8&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;COMMENT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'用户表'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;id字段为主键；在nickname字段处创建了唯一索引。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;当往表里一次性插入多条数据，前两条数据数据的id值都为1：&lt;/p&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'zhangsan'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'17777778901'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'zhangsan@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Beijing'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'lisi'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'16688990101'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'lisi@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hangzhou'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;28&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'wangwu'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'155784983939'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'wangwu@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Guangxi'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;会出现主键冲突错误：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;ERROR 1062 (23000): Duplicate entry ‘1’ for key ‘PRIMARY’&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;同样，往表里一次性插入多条数据，前面两条数据的nickname都为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;zhangsan&lt;/code&gt;。需要注意的是，nickname字段是有唯一索引约束的。&lt;/p&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'zhangsan'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'17777778901'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'zhangsan@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Beijing'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'zhangsan'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'16688990101'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'lisi@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hangzhou'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;28&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'wangwu'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'155784983939'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'wangwu@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Guangxi'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;同样也会出现唯一性约束错误：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;ERROR 1062 (23000): Duplicate entry ‘zhangsan’ for key ‘uk_username’&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;以上两种出现唯一性约束错误之后，MySQL就不会执行后续的INSERT SQL，例如上面的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wangwu&lt;/code&gt;就不会被执行。在批量执行INSERT SQL时，如何忽略某些INSERT操作发生的唯一性约束异常，而不影响后续的INSERT SQL的执行呢？这里记录两种实现方式。&lt;/p&gt;
+
+&lt;h3 id=&quot;2-使用insert-ignore-into&quot;&gt;2. 使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INSERT IGNORE INTO&lt;/code&gt;&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IGNORE&lt;/code&gt;子句是MySQL对SQL标准的扩展。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;IGNORE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'zhangsan'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'17777778901'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'zhangsan@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Beijing'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;IGNORE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'zhangsan'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'16688990101'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'lisi@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hangzhou'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;28&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;IGNORE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'wangwu'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'155784983939'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'wangwu@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Guangxi'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;已知nickname字段上有唯一索引约束，现在每条INSERT SQL都加上了&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IGNORE&lt;/code&gt;，如果用户昵称已经存在，就不执行插入；否则执行插入。这样就不会影响后续的INSERT SQL的执行。&lt;/p&gt;
+
+&lt;h3 id=&quot;3-使用insert-into--on-duplicate-key-update&quot;&gt;3. 使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INSERT INTO ... ON DUPLICATE KEY UPDATE&lt;/code&gt;&lt;/h3&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'zhangsan'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'17777778901'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'zhangsan@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Beijing'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;ON&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DUPLICATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;KEY&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;UPDATE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'zhangsan'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'16688990101'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'lisi@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hangzhou'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;28&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;ON&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DUPLICATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;KEY&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;UPDATE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;my_user&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nickname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mobile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'wangwu'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'155784983939'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'wangwu@foxmail.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Guangxi'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;ON&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DUPLICATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;KEY&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;UPDATE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INSERT INTO ... ON DUPLICATE KEY UPDATE&lt;/code&gt;作用是，若INSERT发生了唯一性约束错误，那么就执行该条记录的更新操作；若没有发生唯一性约束错误，说明记录还未存在，直接执行插入操作。&lt;/p&gt;
+
+&lt;hr /&gt;</content><author><name></name></author><category term="MySQL" /><summary type="html">开发中经常会一次性往一个里INSERT多条数据，但是当某条INSERT SQL因为与表中发生主键冲突，或者与某个定义为UNIQUE KEY的字段发生Duplicate entry错误时，MySQL会放弃执行后续的INSERT SQL。而我们希望如果某条INSERT发生了唯一性约束的错误，那么这条INSERT不插入数据即可，不要影响后面的其他INSERT语句的执行。</summary></entry><entry><title type="html">Java获取HTTP请求中客户端真实IP</title><link href="https://loji44.github.io/2020/03/13/IpUtils.html" rel="alternate" type="text/html" title="Java获取HTTP请求中客户端真实IP" /><published>2020-03-13T14:48:15+08:00</published><updated>2020-03-13T14:48:15+08:00</updated><id>https://loji44.github.io/2020/03/13/IpUtils</id><content type="html" xml:base="https://loji44.github.io/2020/03/13/IpUtils.html">&lt;p&gt;Web服务器端获取HTTP请求客户端的真实IP地址工具类，点击下载：&lt;a href=&quot;/static/files/IpUtils.java&quot; download=&quot;IpUtils.java&quot;&gt;IpUtils.java&lt;/a&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;javax.servlet.http.HttpServletRequest&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.net.InetAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.net.NetworkInterface&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.net.SocketException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.util.Enumeration&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;IpUtils&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * 请求通过反向代理之后，可能包含请求客户端真实IP的HTTP HEADER
+     * 如果后续扩展，有其他可能包含IP的HTTP HEADER，加到这里即可
+     */&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;POSSIBLE_HEADERS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;s&quot;&gt;&quot;X-Forwarded-For&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;X-Real-IP&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Proxy-Client-IP&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;s&quot;&gt;&quot;WL-Proxy-Client-IP&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;HTTP_CLIENT_IP&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;HTTP_X_FORWARDED_FOR&quot;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;};&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;IpUtils&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
+
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * 获取请求客户端的真实IP地址
+     * @param request javax.servlet.http.HttpServletRequest
+     * @return 客户端端真实IP地址
+     */&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getClientIp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;HttpServletRequest&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 先检查代理：逐个HTTP HEADER检查过去，看看是否存在客户端真实IP&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;header&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;POSSIBLE_HEADERS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;header&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isNotBlank&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;unknown&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;equalsIgnoreCase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;// 请求经过多次反向代理后可能会有多个IP值（以英文逗号分隔），第一个IP才是客户端真实IP&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;contains&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;,&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;split&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;,&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 从所有可能的HTTP HEADER中都没有找到客户端真实IP，采用request.getRemoteAddr()来兜底&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getRemoteAddr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;0:0:0:0:0:0:0:1&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;127.0.0.1&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 说明是从本机发出的请求，直接获取并返回本机IP地址&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getLocalRealIp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * 获取本机IP地址
+     * @return 若配置了外网IP则优先返回外网IP；否则返回本地IP地址。如果本机没有被分配局域网IP地址（例如本机没有连接任何网络），则默认返回127.0.0.1
+     */&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getLocalRealIp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;localIP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;127.0.0.1&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 本地IP&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;netIP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 外网IP&lt;/span&gt;
+
+        &lt;span class=&quot;nc&quot;&gt;Enumeration&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;NetworkInterface&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;netInterfaces&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;netInterfaces&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NetworkInterface&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getNetworkInterfaces&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;SocketException&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;printStackTrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 发生异常则返回null&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;InetAddress&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;netIPFound&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 是否找到外网IP&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;netInterfaces&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;hasMoreElements&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;netIPFound&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nc&quot;&gt;Enumeration&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;InetAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;netInterfaces&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nextElement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getInetAddresses&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;hasMoreElements&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nextElement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isSiteLocalAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isLoopbackAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getHostAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;contains&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;:&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;c1&quot;&gt;// 外网IP&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;netIP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getHostAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;netIPFound&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isSiteLocalAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isLoopbackAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getHostAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;contains&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;:&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;c1&quot;&gt;// 内网IP&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;localIP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getHostAddress&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isNotBlank&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;netIP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 如果配置了外网IP则优先返回外网IP地址&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;netIP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;localIP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * &amp;lt;pre&amp;gt;
+     * isBlank(null)      = true
+     * isBlank(&quot;&quot;)        = true
+     * isBlank(&quot; &quot;)       = true
+     * isBlank(&quot;bob&quot;)     = false
+     * isBlank(&quot;  bob  &quot;) = false
+     * &amp;lt;/pre&amp;gt;
+     * @param cs 输入参数
+     * @return
+     */&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;isBlank&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CharSequence&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLen&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cs&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strLen&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLen&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Character&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isWhitespace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;charAt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;cm&quot;&gt;/**
+     * &amp;lt;pre&amp;gt;
+     * isNotBlank(null)      = false
+     * isNotBlank(&quot;&quot;)        = false
+     * isNotBlank(&quot; &quot;)       = false
+     * isNotBlank(&quot;bob&quot;)     = true
+     * isNotBlank(&quot;  bob  &quot;) = true
+     * &amp;lt;/pre&amp;gt;
+     * @param cs 输入参数
+     * @return
+     */&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;isNotBlank&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CharSequence&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isBlank&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;</content><author><name></name></author><category term="Java" /><summary type="html">Web服务器端获取HTTP请求客户端的真实IP地址工具类，点击下载：IpUtils.java</summary></entry><entry><title type="html">Linux中让进程在后台运行更可靠的几种方法</title><link href="https://loji44.github.io/2020/02/25/linux-nohup.html" rel="alternate" type="text/html" title="Linux中让进程在后台运行更可靠的几种方法" /><published>2020-02-25T09:00:00+08:00</published><updated>2020-02-25T09:00:00+08:00</updated><id>https://loji44.github.io/2020/02/25/linux-nohup</id><content type="html" xml:base="https://loji44.github.io/2020/02/25/linux-nohup.html">&lt;blockquote&gt;
+  &lt;p&gt;声明：本篇文章不是原创，转载自：&lt;a href=&quot;https://www.ibm.com/developerworks/cn/linux/l-cn-nohup&quot;&gt;https://www.ibm.com/developerworks/cn/linux/l-cn-nohup&lt;/a&gt; &lt;br /&gt;
+原文章已经写得很好了，这里转载过来，然后自己实践并记录一下。感谢原文章的作者。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;我们经常会碰到这样的问题，用telnet/ssh登录到远程的Linux服务器上，执行一些耗时的任务。但是在任务运行结束之前，本地机器和远程Linux机器的网络中断了，或者自己不小心关闭了终端，都会导致Linux上运行的任务被关闭。&lt;/p&gt;
+
+&lt;p&gt;如何让命令提交后不受本地关闭终端窗口/网络断开连接的干扰呢？下面举了一些例子， 您可以针对不同的场景选择不同的方式来处理这个问题。&lt;/p&gt;
+
+&lt;h3 id=&quot;1-nohupsetsid-命令&quot;&gt;1. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nohup/setsid/&amp;amp;&lt;/code&gt; 命令&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;场景描述：&lt;/strong&gt;&lt;br /&gt;
+如果只是临时有一个命令需要长时间运行，什么方法能最简便的保证它在后台稳定运行呢？&lt;br /&gt;
+&lt;strong&gt;解决方案：&lt;/strong&gt;&lt;br /&gt;
+当用户注销(logout)或者网络断开时，终端会收到HUP(hangup)信号从而关闭其所有子进程。因此，思路有两个：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;让进程忽略HUP信号；&lt;/li&gt;
+  &lt;li&gt;让进程运行在新的会话里从而成为不属于此终端的子进程。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;hangup名称的来由：&lt;/strong&gt; &lt;br /&gt;
+在Unix的早期版本中，每个终端都会通过modem和系统通讯。当用户logout时，modem就会挂断(hang up)电话。 同理，当modem断开连接时，就会给终端发送hangup信号来通知其关闭所有子进程。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;11-nohup&quot;&gt;1.1 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nohup&lt;/code&gt;&lt;/h4&gt;
+
+&lt;p&gt;nohup无疑是我们首先想到的办法。nohup的用途就是让提交的命令忽略hangup信号。先来看一下nohup的帮助信息：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;man &lt;span class=&quot;nb&quot;&gt;nohup
+&lt;/span&gt;NOHUP&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;                         User Commands                        NOHUP&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+NAME
+       &lt;span class=&quot;nb&quot;&gt;nohup&lt;/span&gt; - run a &lt;span class=&quot;nb&quot;&gt;command &lt;/span&gt;immune to hangups, with output to a non-tty
+
+SYNOPSIS
+       &lt;span class=&quot;nb&quot;&gt;nohup &lt;/span&gt;COMMAND &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;ARG]...
+       &lt;span class=&quot;nb&quot;&gt;nohup &lt;/span&gt;OPTION
+
+DESCRIPTION
+       Run COMMAND, ignoring hangup signals.
+
+       &lt;span class=&quot;nt&quot;&gt;--help&lt;/span&gt; display this &lt;span class=&quot;nb&quot;&gt;help &lt;/span&gt;and &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt;
+
+       &lt;span class=&quot;nt&quot;&gt;--version&lt;/span&gt;
+              output version information and &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;nohup的使用很简单，只要在执行的命令前加上nohup即可。标准输出和标准错误默认会被重定向到nohup.out文件中。一般我们可在结尾加上&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;amp;&lt;/code&gt;来将命令同时放入后台运行，也可用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;gt;filename 2&amp;gt;&amp;amp;1&lt;/code&gt;来更改默认的重定向文件名。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;nohup + &amp;amp; 的使用示例：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ping www.ibm.com&lt;/code&gt;是我们要运行的任务指令。&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nohup &lt;/span&gt;ping www.ibm.com &amp;amp;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1] 39907
+
+&lt;span class=&quot;nb&quot;&gt;nohup&lt;/span&gt;: 忽略输入并把输出追加到&lt;span class=&quot;s2&quot;&gt;&quot;nohup.out&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;如果要修改标准输出和标准错误重定向的文件，可以使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;gt;filename 2&amp;gt;&amp;amp;1&lt;/code&gt;：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nohup &lt;/span&gt;ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; output.log 2&amp;gt;&amp;amp;1 &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上面我们把标准输出和标准错误输出重定向的文件改成了output.log，并在最后使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;amp;&lt;/code&gt;来将任务放到后台执行。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;在Shell中，stdin是标准输入；stdout是标准输出；stderr是标准错误输出，分别用数字0，1，2表示。&lt;br /&gt;
+上面的2&amp;gt;&amp;amp;1就表示将stderr输出也重定向到stdout所重定向到的同名文件中，即&amp;amp;1表示output.log文件。 &lt;br /&gt;
+所以当执行的命令发生标准错误，那么这个错误也会输出到你指定的输出文件中，即output.log文件中。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;12-setsid&quot;&gt;1.2 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;setsid&lt;/code&gt;&lt;/h4&gt;
+
+&lt;p&gt;nohup能通过忽略HUP信号来使我们的进程避免中途被中断。但如果我们换个角度思考，如果我们的进程不属于接受HUP信号的终端的子进程，那么自然也就不会受到该终端的HUP信号的影响了。setsid就能帮助我们做到这一点。让我们先来看一下 setsid 的帮助信息：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;man setsid
+SETSID&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;                  Linux Programmer’s Manual                 SETSID&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+NAME
+       setsid - run a program &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;a new session
+
+SYNOPSIS
+       setsid program &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;arg...]
+
+DESCRIPTION
+       setsid runs a program &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;a new session.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;setsid的使用也同样很简单，只要在执行的命令前加上setsid即可。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;setsid使用示例：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;setsid ping www.ibm.com
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ps &lt;span class=&quot;nt&quot;&gt;-ef&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;UID&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;www.ibm.com&quot;&lt;/span&gt;
+UID        PID    PPID   C  STIME TTY      TIME      CMD
+LuzHo211   43482     1   0  16:13 ?        00:00:00  ping www.ibm.com
+LuzHo211   43484  41875  0  16:13 pts/10   00:00:00  &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;UID&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;www.ibm.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以看到我们任务的进程ID为43482，而它的父进程ID为1（即 init 进程ID），并不是当前终端的进程ID。说明使用setsid之后，任务进程变成了init进程的子进程，而不是当前终端进程的子进程。这样一来，就算我们当前终端被关闭或者当前终端的网络跟服务器发生中断，我们的任务进程也不会被关闭。&lt;/p&gt;
+
+&lt;p&gt;相比nohup中任务进程的父进程ID：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;nohup &lt;/span&gt;ping www.ibm.com &amp;amp;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1] 44109
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ps &lt;span class=&quot;nt&quot;&gt;-ef&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;UID&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;www.ibm.com&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;pts&quot;&lt;/span&gt;
+UID        PID   PPID   C STIME TTY      TIME     CMD
+LuzHo211   41875 41874  0 15:38 pts/10   00:00:00 &lt;span class=&quot;nt&quot;&gt;-bash&lt;/span&gt;
+LuzHo211   44109 41875  0 16:22 pts/10   00:00:00 ping www.ibm.com
+LuzHo211   44157 41875  0 16:23 pts/10   00:00:00 ps &lt;span class=&quot;nt&quot;&gt;-ef&lt;/span&gt;
+LuzHo211   44158 41875  0 16:23 pts/10   00:00:00 &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;UID&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;www.ibm.com&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;pts
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以看出我们的任务进程ID为44109，而其父进程ID为41875；41875就是我们当前终端的PID。&lt;/p&gt;
+
+&lt;h4 id=&quot;13-&quot;&gt;1.3 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;amp;&lt;/code&gt;&lt;/h4&gt;
+
+&lt;p&gt;这里还有一个关于subshell的小技巧。我们知道，将一个或多个命名包含在“()”中就能让这些命令在子shell中运行中，从而扩展出很多有趣的功能，我们现在要讨论的就是其中之一。&lt;/p&gt;
+
+&lt;p&gt;当我们将”&amp;amp;”也放入“()”内之后，我们就会发现所提交的作业并不在作业列表中。也就是说，是无法通过jobs来查看的。让我们来看看为什么这样就能躲过HUP信号的影响吧。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;subshell示例：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ping www.ibm.com &amp;amp;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ps &lt;span class=&quot;nt&quot;&gt;-ef&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;UID&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;www.ibm.com&quot;&lt;/span&gt;
+UID        PID  PPID  C STIME TTY          TIME CMD
+root     24535     1  0 10:23 pts/2    00:00:00 ping www.ibm.com
+root     24650 24560  0 10:26 pts/3    00:00:00 &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;auto UID&lt;span class=&quot;se&quot;&gt;\|&lt;/span&gt;www.ibm.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;从上例中可以看出，新提交的进程的父进程ID（PPID）为1（即init进程的PID），并不是当前终端的进程ID。因此并不属于当前终端的子进程，从而也就不会受到当前终端的HUP信号的影响了。&lt;/p&gt;
+
+&lt;h3 id=&quot;2-disown-命令&quot;&gt;2. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;disown&lt;/code&gt; 命令&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;场景描述：&lt;/strong&gt;&lt;br /&gt;
+在提交命令之前，在命令前加上nohup或者setsid就可以避免HUP信号的影响。但是若我们未加任何处理就已经提交了命令，该如何补救才能让它避免HUP信号的影响呢？ &lt;br /&gt;
+&lt;strong&gt;解决方案：&lt;/strong&gt;&lt;br /&gt;
+这时想加nohup或setsid已经为时已晚，只能通过作业调度和disown来解决这个问题。先看一下disown的帮助信息：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;disown&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-ar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;jobspec ...]
+    Without options, each jobspec is  removed  from  the  table  of
+    active  jobs.   If  the &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; option is given, each jobspec is not
+    removed from the table, but is marked so  that  SIGHUP  is  not
+    sent  to the job &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;the shell receives a SIGHUP.  If no jobspec
+    is present, and neither the &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; nor the &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; option  is  supplied,
+    the  current  job  is  used.  If no jobspec is supplied, the &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt;
+    option means to remove or mark all &lt;span class=&quot;nb&quot;&gt;jobs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; the &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; option  without
+    a  jobspec  argument  restricts operation to running jobs.  The
+    &lt;span class=&quot;k&quot;&gt;return &lt;/span&gt;value is 0 unless a jobspec does  not  specify  a  valid
+    job.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以看出，我们可以用如下方式来达成我们的目的：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;用 disown -h &lt;em&gt;jobspec&lt;/em&gt; 来使某个作业忽略HUP信号；&lt;/li&gt;
+  &lt;li&gt;用 disown -ah 来使所有的作业都忽略HUP信号；&lt;/li&gt;
+  &lt;li&gt;用 disown -rh 来使正在运行的作业忽略HUP信号。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;需要注意的是，当使用过disown之后，会将把目标作业从作业列表中移除，我们将不能再使用jobs来查看它，但是依然能够用ps -ef查找到它。&lt;/p&gt;
+
+&lt;p&gt;但是还有一个问题，这种方法的操作对象是作业，如果我们在运行命令时在结尾加了&lt;strong&gt;&amp;amp;&lt;/strong&gt;来使它成为一个作业并在后台运行，那么就万事大吉了，我们可以通过jobs命令来得到所有作业的列表。但是如果并没有把当前命令作为作业来运行，如何才能得到它的作业号呢？答案就是用ctrl + z（按住ctrl键的同时按住z键）了！&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;灵活运用 ctrl + z&lt;/strong&gt; &lt;br /&gt;
+我们可以用ctrl + z来将当前进程挂起到后台&lt;strong&gt;暂停运行&lt;/strong&gt;，执行一些别的操作；然后再用 fg 来将挂起的进程重新放回前台（也可用 bg 来将挂起的进程放在后台）继续运行。这样我们就可以在一个终端内灵活切换运行多个任务。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;ctrl + z的用途就是将当前进程挂起（Suspend），然后我们就可以用jobs命令来查询它的作业号，再用bg &lt;em&gt;jobspec&lt;/em&gt;来将它放入后台并继续运行。&lt;strong&gt;需要注意的是，如果挂起会影响当前进程的运行结果，请慎用此方法&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;disown 示例1：&lt;/strong&gt;提交命令时已经用&lt;strong&gt;&amp;amp;&lt;/strong&gt;将命令放入后台运行，则可以直接使用disown&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log &amp;amp;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1] 25259
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;jobs&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1]+  Running                 ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log &amp;amp;
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;disown&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; %1
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ps &lt;span class=&quot;nt&quot;&gt;-ef&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;ping
+root     25259 25167  0 11:02 pts/4    00:00:00 ping www.ibm.com
+root     25261 25167  0 11:03 pts/4    00:00:00 &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;auto ping
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我在Ubuntu上试过，当提交命令的时候就使用&amp;amp;将命令放入后台运行，如果当前终端关闭了，我们提交的命令并不会被终止，并且命令会自动被挂到init进程下面，保持继续运行。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;disown 示例2：&lt;/strong&gt;提交命令时未使用&lt;strong&gt;&amp;amp;&lt;/strong&gt;将命令放入后台运行，可使用ctrl+z 和 bg 将其放入后台，再使用disown&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 提交命令（不带&amp;amp;）并ctrl + z将命令挂起
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log
+^Z
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1]+  Stopped                 ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log
+
+// jobs查看作业列表，看到命令已经被挂起
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;jobs&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1]+  Stopped                 ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log
+
+// 使用bg将挂起的任务放到后台运行
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;bg&lt;/span&gt; %1
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1]+ ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log &amp;amp;
+
+// 使用jobs查看，发现任务已经在后台运行
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;jobs&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1]+  Running                 ping www.ibm.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log &amp;amp;
+
+// 使用disown &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; 来让任务免受HUP信号的干扰
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;disown&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; %1
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ps &lt;span class=&quot;nt&quot;&gt;-ef&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;ping
+root     25382 25296  0 11:13 pts/6    00:00:00 ping www.ibm.com
+root     25387 25296  0 11:16 pts/6    00:00:00 &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;auto ping
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;3-screen命令&quot;&gt;3. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;screen&lt;/code&gt;命令&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;场景描述：&lt;/strong&gt;&lt;br /&gt;
+我们已经知道了如何让进程免受HUP信号的影响，但是如果有大量这种命令需要在稳定的后台里运行，如何避免对每条命令都做这样的操作呢？ &lt;br /&gt;
+&lt;strong&gt;解决方案：&lt;/strong&gt;&lt;br /&gt;
+此时最方便的方法就是screen了。简单的说，screen提供了ANSI/VT100的终端模拟器，使它能够在一个真实终端下运行多个全屏的伪终端。screen的参数很多，具有很强大的功能，我们在此仅介绍其常用功能以及简要分析一下为什么使用screen能够避免HUP信号的影响。先看一下screen的帮助信息：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SCREEN&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;                                                           SCREEN&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+ 
+NAME
+       screen - screen manager with VT100/ANSI terminal emulation
+ 
+SYNOPSIS
+       screen &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; cmd &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; args &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+       screen &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt;pid.]tty[.host]]
+       screen &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; sessionowner/[[pid.]tty[.host]]
+ 
+DESCRIPTION
+       Screen  is  a  full-screen  window manager that multiplexes a physical
+       terminal between several  processes  &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;typically  interactive  shells&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+       Each  virtual  terminal provides the functions of a DEC VT100 terminal
+       and, &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;addition, several control functions from the  ISO  6429  &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ECMA
+       48,  ANSI  X3.64&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;  and ISO 2022 standards &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;e.g. insert/delete line and
+       support &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;multiple character sets&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;  There is a  scrollback  &lt;span class=&quot;nb&quot;&gt;history
+       &lt;/span&gt;buffer  &lt;span class=&quot;k&quot;&gt;for  &lt;/span&gt;each virtual terminal and a copy-and-paste mechanism that
+       allows moving text regions between windows.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;screen的使用也很方便，有以下几个常用选项：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;用 screen -dmS &lt;em&gt;session name&lt;/em&gt; 来建立一个处于断开模式下的会话（并指定其会话名）;&lt;/li&gt;
+  &lt;li&gt;用 screen -list 来列出所有会话；&lt;/li&gt;
+  &lt;li&gt;用 screen -r &lt;em&gt;session name&lt;/em&gt; 来重新连接指定会话；&lt;/li&gt;
+  &lt;li&gt;用快捷键 ctrl+a d 来暂时断开当前会话。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;screen 示例：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;screen &lt;span class=&quot;nt&quot;&gt;-dmS&lt;/span&gt; Urumchi
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;screen &lt;span class=&quot;nt&quot;&gt;-list&lt;/span&gt;
+There is a screen on:
+	26332.Urumchi	&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;02/26/2020 12:08:50 PM&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;	&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Detached&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+1 Socket &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; /var/run/screen/S-root.
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;screen &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; Urumchi
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;当我们用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-r&lt;/code&gt;参数连接到screen会话后，我们就可以在这个伪终端里面为所欲为，再也不用担心HUP信号会对我们的进程造成影响，也不用给每个命令前都加上nohup或者setsid了。这是为什么呢？让我来看一下下面两个例子吧。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. 未使用 screen 时新进程的进程树：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ping www.baidu.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log &amp;amp;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1] 26366
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;pstree &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; 26366
+systemd─┬─AliYunDun───23&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[{&lt;/span&gt;AliYunDun&lt;span class=&quot;o&quot;&gt;}]&lt;/span&gt;
+        ├─AliYunDunUpdate───3&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[{&lt;/span&gt;AliYunDunUpdate&lt;span class=&quot;o&quot;&gt;}]&lt;/span&gt;    
+        └─sshd─┬─7&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;sshd───bash]
+               └─sshd───bash─┬─ping
+                             └─pstree
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以看出，未使用screen时我们所处的bash是sshd的子进程，当ssh断开连接时，HUP信号自然会影响到它下面的所有子进程（包括我们新建立的ping进程）。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. 使用了 screen 后新进程的进程树：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;screen &lt;span class=&quot;nt&quot;&gt;-dmS&lt;/span&gt; my_new_session
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;screen &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; my_new_session
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ping www.baidu.com &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; ping.log &amp;amp;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;1] 26421
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;pstree &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; 26421
+systemd─┬─AliYunDun───23&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[{&lt;/span&gt;AliYunDun&lt;span class=&quot;o&quot;&gt;}]&lt;/span&gt;
+        ├─AliYunDunUpdate───3&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[{&lt;/span&gt;AliYunDunUpdate&lt;span class=&quot;o&quot;&gt;}]&lt;/span&gt;
+        ├─screen───bash─┬─ping
+        │               └─pstree
+        └─sshd─┬─8&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;sshd───bash]
+               └─sshd───bash───screen
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以看到，使用了screen之后，我们所处的bash则变成了screen进程的子进程，而screen又是systemd的子进程。那么当ssh断开连接时，HUP信号自然不会影响到screen下面的子进程了。&lt;/p&gt;
+
+&lt;h3 id=&quot;4-总结&quot;&gt;4. 总结&lt;/h3&gt;
+
+&lt;p&gt;现在几种方法已经介绍完毕，我们可以根据不同的场景来选择不同的方案。nohup/setsid无疑是临时需要时最方便的方法，disown能帮助我们来事后补救当前已经在运行了的作业，而screen则是在大批量操作时不二的选择了。&lt;/p&gt;
+
+&lt;hr /&gt;</content><author><name></name></author><category term="Linux" /><summary type="html">声明：本篇文章不是原创，转载自：https://www.ibm.com/developerworks/cn/linux/l-cn-nohup 原文章已经写得很好了，这里转载过来，然后自己实践并记录一下。感谢原文章的作者。</summary></entry><entry><title type="html">Mac OS下iTerm2终端使用rz/sz进行远程文件的下载/上传</title><link href="https://loji44.github.io/2020/01/13/iterm2-lrzsz.html" rel="alternate" type="text/html" title="Mac OS下iTerm2终端使用rz/sz进行远程文件的下载/上传" /><published>2020-01-13T15:25:13+08:00</published><updated>2020-01-13T15:25:13+08:00</updated><id>https://loji44.github.io/2020/01/13/iterm2-lrzsz</id><content type="html" xml:base="https://loji44.github.io/2020/01/13/iterm2-lrzsz.html">&lt;p&gt;&lt;img src=&quot;/static/image/2020-01/iterm2-logo2x.jpg&quot; alt=&quot;iterm2-logo2x.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Mac OS下使用iTerm2终端时，经常会使用SSH方式登录到远程服务器，进行文件上传/下载操作。一般情况使用scp命令或者XFtp应用来直接上传/下载文件，但是如果远程服务器跟我们本地电脑之间隔了一层跳板机，scp和XFtp就不太好用了。作为替代方案，我们可以使用sz/rz命令来上传/下载文件。&lt;/p&gt;
+
+&lt;h3 id=&quot;1-安装lrzsz程序包&quot;&gt;1. 安装lrzsz程序包&lt;/h3&gt;
+
+&lt;p&gt;sz和rz命令是lrzsz程序包提供的两个命令，所以先安装lrzsz程序包。这里通过&lt;a href=&quot;https://brew.sh&quot;&gt;Homebrew&lt;/a&gt;来安装lrzsz程序包，如果没有安装Homebrew，请先自行安装。&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;brew &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;lrzsz
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;2-iterm2的相关配置脚本&quot;&gt;2. iTerm2的相关配置脚本&lt;/h3&gt;
+
+&lt;p&gt;先下载这两个脚本文件：&lt;a href=&quot;/static/files/iterm2-send-zmodem.sh&quot;&gt;iterm2-send-zmodem.sh&lt;/a&gt; 和 &lt;a href=&quot;/static/files/iterm2-recv-zmodem.sh&quot;&gt;iterm2-recv-zmodem.sh&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;将&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;iterm2-send-zmodem.sh&lt;/code&gt;和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;iterm2-recv-zmodem.sh&lt;/code&gt;脚本放到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/usr/local/bin&lt;/code&gt;目录下，并赋予可执行的权限：&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;chmod&lt;/span&gt; +x /usr/local/bin/iterm2-send-zmodem.sh /usr/local/bin/iterm2-recv-zmodem.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;3-配置iterm2&quot;&gt;3. 配置iTerm2&lt;/h3&gt;
+
+&lt;p&gt;&lt;em&gt;找到iTerm2的配置项：iTerm2的Preferences -&amp;gt; Profiles -&amp;gt; Default -&amp;gt; Advanced -&amp;gt; Triggers&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;点击Triggers的Edit按钮，按照以下表格进行配置：&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;Regular Expression&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;Action&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;Parameters&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;Instant&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rz waiting to receive.\*\*B0100&lt;/code&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;Run Silent Coprocess&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;/usr/local/bin/iterm2-send-zmodem.sh&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;checked&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;\*\*B00000000000000&lt;/code&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;Run Silent Coprocess&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;/usr/local/bin/iterm2-recv-zmodem.sh&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;checked&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;strong&gt;注意：最后一项Instant一定要勾选上！&lt;/strong&gt; 如下图的配置：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/static/image/2020-01/iterm2-config.png&quot; alt=&quot;iterm2-config.png&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;参考：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://molunerfinn.com/iTerm2-lrzsz/#%E9%85%8D%E7%BD%AEiTerm2&quot; target=&quot;_blank&quot;&gt;https://molunerfinn.com/iTerm2-lrzsz/#%E9%85%8D%E7%BD%AEiTerm2&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="MacOS" /><category term="iTerm2" /><summary type="html"></summary></entry></feed>
