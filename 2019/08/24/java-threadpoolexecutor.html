@@ -1,0 +1,292 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Java线程池ThreadPoolExecutor | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>Java线程池ThreadPoolExecutor</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/Java.html">#Java</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;24 August 2019&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p>先贴出使用<code class="language-plaintext highlighter-rouge">ThreadPoolExecutor</code>来创建线程池的核心构造函数：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nf">ThreadPoolExecutor</span><span class="o">(</span><span class="kt">int</span> <span class="n">corePoolSize</span><span class="o">,</span>
+                              <span class="kt">int</span> <span class="n">maximumPoolSize</span><span class="o">,</span>
+                              <span class="kt">long</span> <span class="n">keepAliveTime</span><span class="o">,</span>
+                              <span class="nc">TimeUnit</span> <span class="n">unit</span><span class="o">,</span>
+                              <span class="nc">BlockingQueue</span><span class="o">&lt;</span><span class="nc">Runnable</span><span class="o">&gt;</span> <span class="n">workQueue</span><span class="o">,</span>
+                              <span class="nc">ThreadFactory</span> <span class="n">threadFactory</span><span class="o">,</span>
+                              <span class="nc">RejectedExecutionHandler</span> <span class="n">handler</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="o">...</span> 
+<span class="o">}</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">参数名称</th>
+      <th style="text-align: left">参数说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">corePoolSize</td>
+      <td style="text-align: left">线程池的核心线程数，一旦创建就会一直保留在线程池中（除非调用<code class="language-plaintext highlighter-rouge">allowCoreThreadTimeOut(true)</code>方法将<code class="language-plaintext highlighter-rouge">allowCoreThreadTimeOut</code>参数设置成<code class="language-plaintext highlighter-rouge">true</code>）</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">maximumPoolSize</td>
+      <td style="text-align: left">线程池中允许存活的最大线程数</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">keepAliveTime</td>
+      <td style="text-align: left">当创建的线程数量超过了核心线程数，允许线程池中处于空闲状态的非核心线程的存活时间（若设置<code class="language-plaintext highlighter-rouge">allowCoreThreadTimeOut</code>参数为<code class="language-plaintext highlighter-rouge">true</code>，空闲超时的核心线程也会被回收）</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">unit</td>
+      <td style="text-align: left">keepAliveTime参数的时间单位，例如<code class="language-plaintext highlighter-rouge">TimeUnit.MILLISECONDS</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">workQueue</td>
+      <td style="text-align: left">工作队列（阻塞队列），用于存放将被执行的线程任务（Runnable tasks）</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">threadFactory</td>
+      <td style="text-align: left">创建线程的工厂，可以用于标记区分不同线程池所创建出来的线程</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">handler</td>
+      <td style="text-align: left">拒绝策略handler。当线程池中线程数量和工作队列的容量均达到上限，继续向线程池提交任务时所触发的拒绝策略逻辑handler</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="1-线程池大小与线程存活时间">1. 线程池大小与线程存活时间</h3>
+
+<p>线程池有两个关于线程数量配置的参数：<code class="language-plaintext highlighter-rouge">corePoolSize</code>和<code class="language-plaintext highlighter-rouge">maximumPoolSize</code>：</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">corePoolSize</code>：设置线程池的核心线程数</li>
+  <li><code class="language-plaintext highlighter-rouge">maximumPoolSize</code>：设置线程池中允许存活的最大线程数</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">keepAliveTime</code>参数用于设置<strong>非核心线程</strong>的存活时间，使用<code class="language-plaintext highlighter-rouge">unit</code>参数指定时间单位。即<strong>非核心线程</strong>空闲的时间超过了所设置的keepAliveTime，线程就会被回收。默认情况下，核心线程一旦被创建就不会被回收，但是若设置了<code class="language-plaintext highlighter-rouge">allowCoreThreadTimeOut</code>参数为<code class="language-plaintext highlighter-rouge">true</code>，核心线程也会被回收。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 允许回收空闲的核心线程</span>
+<span class="n">threadPoolExecutor</span><span class="o">.</span><span class="na">allowCoreThreadTimeOut</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>线程池创建后，池中默认不会有任何线程。当向线程池中提交任务时，线程池才会创建线程。但是如果显式调用了prestartAllCoreThreads()或者prestartCoreThread()方法，会立即创建核心线程。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 调用prestartAllCoreThreads()来立即创建所有核心线程</span>
+<span class="n">threadPoolExecutor</span><span class="o">.</span><span class="na">prestartAllCoreThreads</span><span class="o">();</span>
+<span class="c1">// 或者调用prestartCoreThread()来立即创建一个核心线程</span>
+<span class="n">threadPoolExecutor</span><span class="o">.</span><span class="na">prestartCoreThread</span><span class="o">();</span>
+</code></pre></div></div>
+
+<h3 id="2-线程池工作队列work-queue">2. 线程池工作队列（Work Queue）</h3>
+
+<p>工作队列的用处就是用来缓存所提交的线程任务（Runnable task）。线程池的工作队列采用的是阻塞队列（BlockingQueue），可以直接在多线程并发的环境下缓存线程任务。</p>
+
+<blockquote>
+  <p>阻塞队列特性：如果阻塞队列为空（empty），则尝试从队列中获取（读取）任务的线程会被阻塞；如果阻塞队列满了（full），则尝试往队列中插入任务的线程会被阻塞。</p>
+</blockquote>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">阻塞队列</th>
+      <th style="text-align: left">阻塞队列说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">ArrayBlockingQueue</td>
+      <td style="text-align: left">一个基于数组结构的<strong>有界</strong>阻塞队列。</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">LinkedBlockingQueue</td>
+      <td style="text-align: left">一个基于链表结构的<strong>有界</strong>阻塞队列。</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SynchronousQueue</td>
+      <td style="text-align: left">同步移交队列，本身不存储任何元素。一个线程的插入操作必须等待另一个线程来读取才能完成，才会允许下一个插入操作。</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PriorityBlockingQueue</td>
+      <td style="text-align: left">一个支持优先级排序的<strong>无界</strong>阻塞队列。</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DelayQueue</td>
+      <td style="text-align: left">一个使用优先级队列实现的<strong>无界</strong>阻塞队列。用于处理延迟任务。</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="3-线程池拒绝策略rejected-handler">3. 线程池拒绝策略（Rejected Handler）</h3>
+
+<p>当线程池的工作队列满了，并且线程池中线程数量也已经达到最大值；继续往线程池中提交任务时，就会触发拒绝策略。<code class="language-plaintext highlighter-rouge">  ThreadPoolExecutor</code>内置了四种拒绝策略：</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AbortPolicy</code>：取消策略，丢弃任务并抛出RejectedExecutionException，默认的拒绝策略。</li>
+  <li><code class="language-plaintext highlighter-rouge">DiscardPolicy</code>：丢弃策略，丢弃任务但是不会抛出任何异常。</li>
+  <li><code class="language-plaintext highlighter-rouge">DiscardOldestPolicy</code>：丢弃策略，丢弃队列中最老的任务并尝试重新执行所提交的任务。</li>
+  <li><code class="language-plaintext highlighter-rouge">CallerRunsPolicy</code>：调用者执行策略，将任务直接给提交该任务的线程来执行。</li>
+</ul>
+
+<p>以上四种拒绝策略是<code class="language-plaintext highlighter-rouge">ThreadPoolExecutor</code>内置的，对于被拒绝的任务处理比较简单。我们也可以继承这些拒绝策略类或者直接实现<code class="language-plaintext highlighter-rouge">RejectedExecutionHandler</code>接口来自定义拒绝策略。</p>
+
+<h3 id="4-线程池工作流程要点">4. 线程池工作流程要点</h3>
+
+<ol>
+  <li>当线程池中的线程数量<strong>小于</strong>核心线程数：新提交一个任务时，无论是否存在空闲的线程，线程池都将新建一个新的线程来执行新任务；</li>
+  <li>当线程池中的线程数量<strong>等于</strong>核心线程数（核心线程已满）：新提交的任务会被存储到工作队列中，等待空闲线程来执行，<strong>而不会创建新线程</strong>；</li>
+  <li>当工作队列已满，并且池中的线程数量<strong>小于</strong>最大线程数（<code class="language-plaintext highlighter-rouge">maximumPoolSize</code>）：如果继续提交新的任务，线程池会创建新线程来处理任务；</li>
+  <li>当工作队列已满，并且池中线程数量已达到最大值：继续提交新任务时，线程池会触发拒绝策略处理逻辑；</li>
+  <li>如果线程池中存在空闲的线程并且其空闲时间达到了<code class="language-plaintext highlighter-rouge">keepAliveTime</code>参数的限定值，线程池会回收这些空闲线程，但是线程池不会回收空闲的核心线程；但是如果在创建线程池的时候设置了<code class="language-plaintext highlighter-rouge">allowCoreThreadTimeOut</code>参数为<code class="language-plaintext highlighter-rouge">true</code>，空闲超时的核心线程也会被回收。</li>
+</ol>
+
+<h3 id="5-如何向线程池提交任务">5. 如何向线程池提交任务？</h3>
+
+<p>向线程池中提交线程任务有两种方式：调用<code class="language-plaintext highlighter-rouge">execute</code>方法或者调用<code class="language-plaintext highlighter-rouge">submit</code>方法。</p>
+
+<h5 id="51-调用execute方法提交任务">5.1 调用<code class="language-plaintext highlighter-rouge">execute</code>方法提交任务</h5>
+
+<p>execute方法定义在<code class="language-plaintext highlighter-rouge">java.util.concurrent.Executor</code>接口中：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Executor</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">execute</span><span class="o">(</span><span class="nc">Runnable</span> <span class="n">command</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>execute方法没有返回值，并且只能接收<code class="language-plaintext highlighter-rouge">Runnable</code>类型的任务，总体来说比较简单，任务提交之后就是等待CPU调度执行了。</p>
+
+<h5 id="52-调用submit方法提交任务">5.2 调用<code class="language-plaintext highlighter-rouge">submit</code>方法提交任务</h5>
+
+<p>submit方法定义在<code class="language-plaintext highlighter-rouge">java.util.concurrent.ExecutorService</code>接口中，有三种形式：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ExecutorService</span> <span class="kd">extends</span> <span class="nc">Executor</span> <span class="o">{</span>
+    <span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="nc">Future</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="nf">submit</span><span class="o">(</span><span class="nc">Callable</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">task</span><span class="o">);</span>
+    <span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="nc">Future</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="nf">submit</span><span class="o">(</span><span class="nc">Runnable</span> <span class="n">task</span><span class="o">,</span> <span class="no">T</span> <span class="n">result</span><span class="o">);</span>
+    <span class="nc">Future</span><span class="o">&lt;?&gt;</span> <span class="n">submit</span><span class="o">(</span><span class="nc">Runnable</span> <span class="n">task</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>与execute方法不同的是，submit方法有返回值，这就意味着我们可以在线程任务执行完之后，拿到线程任务执行结果；而且除了<code class="language-plaintext highlighter-rouge">Runnable</code>任务，submit还支持提交<code class="language-plaintext highlighter-rouge">Callable</code>类型的任务，我们来看看<code class="language-plaintext highlighter-rouge">Callable</code>是什么：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@FunctionalInterface</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="no">V</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="no">V</span> <span class="nf">call</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>很明显，跟<code class="language-plaintext highlighter-rouge">Runnable</code>一样也是个函数式接口（FunctionalInterface），但是跟<code class="language-plaintext highlighter-rouge">Runnable</code>不一样的地方在于，<code class="language-plaintext highlighter-rouge">Callable</code>带有返回值！这就为我们在任务执行完毕之后获取执行结果提供了可能！</p>
+
+<p>下面来看看submit的第一个方法：<code class="language-plaintext highlighter-rouge">&lt;T&gt; Future&lt;T&gt; submit(Callable&lt;T&gt; task);</code></p>
+
+<p><img src="/static/image/2020-06/submit1.png" alt="submit1.png" /></p>
+
+<p>submit的其他两个方法也差不多类似，这里就不详细展开了。它们虽然接收的是<code class="language-plaintext highlighter-rouge">Runnable</code>类型参数，但是最终都会转换成<code class="language-plaintext highlighter-rouge">Callable</code>类型任务：</p>
+
+<p><img src="/static/image/2020-06/runnable2callable.png" alt="runnable2callable.png" /></p>
+
+<p>总之，submit方法将提交的<code class="language-plaintext highlighter-rouge">Runnable</code>或<code class="language-plaintext highlighter-rouge">Callable</code>任务封装成一个<code class="language-plaintext highlighter-rouge">FutureTask</code>对象，最终执行任务的时候，就是调用<code class="language-plaintext highlighter-rouge">FutureTask</code>对象中的<code class="language-plaintext highlighter-rouge">run</code>方法：</p>
+
+<p><img src="/static/image/2020-06/futuretask-run.png" alt="futuretask-run.png" /></p>
+
+<p>submit提交任务后，若任务执行时发生异常，异常不会直接抛出来，而是会被FutureTask封装到一个名叫<code class="language-plaintext highlighter-rouge">outcome</code>变量中，等到调用<code class="language-plaintext highlighter-rouge">Future.get</code>的时候异常才会抛出来，这点在使用的时候要注意。</p>
+
+<p><img src="/static/image/2020-06/future-get.png" alt="future-get.png" /></p>
+
+<p>submit在线程任务异常的处理方式上与execute区别很大：execute的异常只能由线程池中执行该任务的线程自己消化掉，例如<code class="language-plaintext highlighter-rouge">try-catch</code>掉，在其他地方（例如调用者线程）企图<code class="language-plaintext highlighter-rouge">try-catch</code>任务的异常，是没法做到的。对于execute方式，想要在其他地方捕获任务执行时抛出的异常，似乎只能通过为线程设置<code class="language-plaintext highlighter-rouge">Thread.UncaughtExceptionHandler</code>来完成。</p>
+
+<p>submit则是先将异常封装起来，不会立即抛出。直到调用<code class="language-plaintext highlighter-rouge">Future.get</code>的时候才会将异常抛出，即我们能从其他地方捕获到任务的异常。在使用的时候需要注意，因为有时候只是想向线程池中提交任务，而不会调用<code class="language-plaintext highlighter-rouge">Future.get</code>获取结果（因为不关心结果）。如果发生异常，FutureTask会「吞掉」我们的异常，我们在日志中根本看不到任何异常信息，这会对我们的问题排查带来很大问题。</p>
+
+<h5 id="53-选择execute还是submit">5.3 选择execute还是submit？</h5>
+
+<p>通常情况下，如果如果不关心任务执行结果，那么直接用execute方法即可；如果关心结果，可以使用<code class="language-plaintext highlighter-rouge">submit + Future.get</code>组合来拿到任务执行结果。</p>
+
+<p>另外，execute和submit方法对异常的处理方式也不同，execute提交的任务在执行时如果发生异常，会被执行该任务的线程消化掉（要么线程自己<code class="language-plaintext highlighter-rouge">try-catch</code>掉，要么线程没处理，线程终止），外部其他地方无法捕获，除非设置了<code class="language-plaintext highlighter-rouge">Thread.UncaughtExceptionHandler</code>；submit方法提交的任务在执行时发生的异常，会被FutureTask「吞掉」，然后在用户调用<code class="language-plaintext highlighter-rouge">Future.get</code>时将异常抛出。</p>
+
+<h3 id="6-线程池工具类executors">6. 线程池工具类（Executors）</h3>
+
+<p>JDK提供了<code class="language-plaintext highlighter-rouge">java.util.concurrent.Executors</code>这个工具类来帮助我们快速创建线程池。</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">newFixedThreadPool(int nThreads)</code>：创建一个固定数量线程的线程池，池中的线程数量达到最大值后会始终保持不变。</li>
+  <li><code class="language-plaintext highlighter-rouge">newSingleThreadExecutor()</code>：创建一个只包含单个线程的线程池，可以保证所有任务按提交的顺序被单一的一个线程串行地执行。</li>
+  <li><code class="language-plaintext highlighter-rouge">newCachedThreadPool()</code>：创建一个会根据任务按需地创建、回收线程的线程池。这种类型线程池适合执行数量多、耗时少的任务。</li>
+  <li><code class="language-plaintext highlighter-rouge">newScheduledThreadPool(int corePoolSize)</code>：创建一个具有定时功能的线程池，适用于执行定时任务。</li>
+</ul>
+
+<p>以上四种定义好的线程池确实很方便我们的使用，但是我们需要了解它们的隐患之处：</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">FixedThreadPool</code>、<code class="language-plaintext highlighter-rouge">SingleThreadPool</code>的工作队列最大容量为<code class="language-plaintext highlighter-rouge">Integer.MAX_VALUE</code>，这有可能会随着工作队列中的任务堆积而导致<code class="language-plaintext highlighter-rouge">OOM</code>；</li>
+  <li><code class="language-plaintext highlighter-rouge">CachedThreadPool</code>、<code class="language-plaintext highlighter-rouge">ScheduledThreadPool</code>允许最大线程数为<code class="language-plaintext highlighter-rouge">Integer.MAX_VALUE</code>，这也有可能因为创建大量线程导致<code class="language-plaintext highlighter-rouge">OOM</code>或者线程切换开销巨大。</li>
+</ul>
+
+<hr />
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+</div>
+</html>
