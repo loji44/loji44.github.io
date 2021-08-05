@@ -63,11 +63,11 @@
   </div>
 </div>
         <div class="post">
-          <p>博客基于<a href="https://jekyllrb.com/">Jekyll</a>博客框架来搭建，并采用<a href="https://github.com/Huxpro/huxpro.github.io">Hux Blog</a>作为博客主题。分两步走：</p>
+          <p>博客基于 <a href="https://jekyllrb.com" target="_blank">Jekyll</a> 博客框架来搭建，并采用 <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a> 作为博客主题。分两步走：</p>
 
 <ul>
   <li>安装Jekyll博客的开发环境</li>
-  <li>配置Hux Blog作为博客主题</li>
+  <li>配置ExSimple作为博客主题</li>
 </ul>
 
 <h3 id="1-安装jekyll博客开发环境">1. 安装Jekyll博客开发环境</h3>
@@ -77,11 +77,7 @@
 ruby 2.3.7p456 <span class="o">(</span>2018-03-28 revision 63024<span class="o">)</span> <span class="o">[</span>universal.x86_64-darwin18]
 </code></pre></div></div>
 
-<blockquote>
-  <p>根据<a href="https://jekyllrb.com/">Jekyll官网</a>中介绍的“三大步”安装教程，可以很快搭建一个静态博客网站。</p>
-</blockquote>
-
-<p>首先，我们执行下面的指令来安装 Jekyll：</p>
+<p>首先，执行下面的指令来安装 Jekyll：</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>gem <span class="nb">install </span>bundler jekyll
 </code></pre></div></div>
@@ -94,18 +90,14 @@ ERROR:  Error installing jekyll:
 	jekyll-sass-converter requires Ruby version <span class="o">&gt;=</span> 2.4.0.
 </code></pre></div></div>
 
-<p>嗯… 很明显，我电脑自带的Ruby版本没满足Jekyll要求的版本（<code class="language-plaintext highlighter-rouge">Ruby version &gt;= 2.4.0</code>）。还能怎么办？那就来升级一下Ruby的版本呗：</p>
+<p>嗯… 很明显，我电脑自带的Ruby版本没满足Jekyll要求的版本。还能怎么办？那就来升级一下Ruby的版本呗 <code class="language-plaintext highlighter-rouge">:)</code></p>
 
-<blockquote>
-  <p>参考了这篇文章：「<a href="https://www.jianshu.com/p/a575aff064e3">Mac OS升级Ruby</a>」把Ruby升级到了2.6.3版本。这篇文章中介绍的升级方法，核心就是使用Ruby的第三方版本管理工具<a href="http://rvm.io/">RVM</a>来完成。</p>
-</blockquote>
-
-<p>那么就先来安装RVM（官网也有介绍<a href="http://rvm.io/">如何安装RVM</a>）：</p>
+<p>这里通过Ruby的版本管理器<a href="http://rvm.io" target="_blank">RVM</a>(<code class="language-plaintext highlighter-rouge">Ruby Version Manager</code>)来升级Ruby的版本。先来安装RVM：</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-L</span> get.rvm.io | bash <span class="nt">-s</span> stable
 </code></pre></div></div>
 
-<p>安装完成之后，执行下面的指令来使RVM立即生效：</p>
+<p>RVM安装完成之后，执行下面的指令来使RVM立即生效：</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">source</span> ~/.rvm/scripts/rvm
 </code></pre></div></div>
@@ -130,52 +122,42 @@ Install of ruby-2.6.3 - <span class="c">#complete</span>
 ruby 2.6.3p62 <span class="o">(</span>2019-04-16 revision 67580<span class="o">)</span> <span class="o">[</span>x86_64-darwin18]
 </code></pre></div></div>
 
-<p>没错了，接下来继续安装我们的Jekyll，直接执行下面的指令进行安装：</p>
+<p>没错了，接下来继续安装我们的Jekyll。直接执行下面的指令进行安装：</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>gem <span class="nb">install </span>bundler jekyll
 </code></pre></div></div>
 
 <p>这个安装过程可能会有点耗时，请耐心等待安装Jekyll完成 …</p>
 
-<h3 id="2-使用hux-blog作为博客主题">2. 使用Hux Blog作为博客主题</h3>
+<h3 id="2-配置exsimple作为博客主题">2. 配置ExSimple作为博客主题</h3>
 
-<p>经过上一章，我们已经将Jekyll开发环境搭建好了，现在来配置Hux Blog作为博客主题。</p>
+<p>至此，Jekyll开发环境搭建好了。现在来配置ExSimple作为博客主题。</p>
 
 <ul>
-  <li>下载Hux Blog主题源码，删除无关的文件</li>
+  <li>下载ExSimple主题源码</li>
 </ul>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>git clone git@github.com:Huxpro/huxblog-boilerplate.git my_blog_site
-<span class="nv">$ </span><span class="nb">cd </span>my_blog_site
-<span class="nv">$ </span><span class="nb">rm</span> <span class="nt">-rf</span> my_blog_site/_posts/<span class="k">*</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>git clone https://github.com/loji44/ExSimple.git your_blog
+<span class="nv">$ </span><span class="nb">cd </span>your_blog
 </code></pre></div></div>
 
-<blockquote>
-  <p>因为我们下载的是主题作者的博客源码，所以使用 <code class="language-plaintext highlighter-rouge">rm -rf my_blog_site/_posts/*</code>直接删除作者的发布的文章，然后我们就可以在 <code class="language-plaintext highlighter-rouge">_posts</code>目录下面创建自己的博客文章，写博客了。</p>
-</blockquote>
-
-<ul>
-  <li>写一个简单的博客文章：<code class="language-plaintext highlighter-rouge">vim 2019-08-20-my-blog.markdown</code> 内容如下：</li>
-</ul>
+<p>下载之后，直接在<code class="language-plaintext highlighter-rouge">_posts</code>目录下面创建自己的博客文章：<code class="language-plaintext highlighter-rouge">vim 2019-08-20-my-blog.markdown</code> 编辑内容如下</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">---</span>
 layout: post
 title: 关于我的博客网站
-subtitle: 我的博客网站搭建记录
 <span class="nb">date</span>: 2019-08-20 15:28:34.000000000 +08:00
-header-img: assets/images/tag-bg.jpg
-author: PandaQ
 tags: 
- - Blog
- - 技术教程
+ - 博客
+ - Jekyll
 <span class="nt">---</span>
 
-<span class="o">&gt;</span>这篇文章记录一下自己博客搭建的过程。
+这是我的个人博客。
 
 </code></pre></div></div>
 
 <ul>
-  <li>启动Jekyll</li>
+  <li>本地调试：启动Jekyll</li>
 </ul>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">install</span> <span class="o">&amp;&amp;</span> bundle <span class="nb">exec </span>jekyll serve
@@ -186,13 +168,13 @@ tags:
 <p>Jekyll默认监听的host是<code class="language-plaintext highlighter-rouge">127.0.0.0</code>，只能从本机电脑访问；启动Jekyll的时候使用<code class="language-plaintext highlighter-rouge">--host</code>参数让Jekyll监听的host为<code class="language-plaintext highlighter-rouge">0.0.0.0</code>。</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">exec </span>jekyll serve <span class="nt">--host</span> 0.0.0.0
-Configuration file: /root/my_blog_site/_config.yml
-            Source: /root/my_blog_site
-       Destination: /root/my_blog_site/_site
+Configuration file: /root/your_blog/_config.yml
+            Source: /root/your_blog
+       Destination: /root/your_blog/_site
  Incremental build: disabled. Enable with <span class="nt">--incremental</span>
       Generating...
                     <span class="k">done in </span>0.408 seconds.
- Auto-regeneration: enabled <span class="k">for</span> <span class="s1">'/root/my_blog_site'</span>
+ Auto-regeneration: enabled <span class="k">for</span> <span class="s1">'/root/your_blog'</span>
     Server address: http://0.0.0.0:4000
   Server running... press ctrl-c to stop.
 </code></pre></div></div>
@@ -200,13 +182,13 @@ Configuration file: /root/my_blog_site/_config.yml
 <p>还可以使用<code class="language-plaintext highlighter-rouge">--port</code>参数来修改Jekyll监听的端口：</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bundle <span class="nb">exec </span>jekyll serve <span class="nt">--host</span> 0.0.0.0 <span class="nt">--port</span> 8080
-Configuration file: /root/my_blog_site/_config.yml
-            Source: /root/my_blog_site
-       Destination: /root/my_blog_site/_site
+Configuration file: /root/your_blog/_config.yml
+            Source: /root/your_blog
+       Destination: /root/your_blog/_site
  Incremental build: disabled. Enable with <span class="nt">--incremental</span>
       Generating...
                     <span class="k">done in </span>0.419 seconds.
- Auto-regeneration: enabled <span class="k">for</span> <span class="s1">'/root/my_blog_site'</span>
+ Auto-regeneration: enabled <span class="k">for</span> <span class="s1">'/root/your_blog'</span>
     Server address: http://0.0.0.0:8080
   Server running... press ctrl-c to stop.
 </code></pre></div></div>
@@ -215,7 +197,7 @@ Configuration file: /root/my_blog_site/_config.yml
 
 <h3 id="3-将jekyll博客以静态资源方式部署">3. 将Jekyll博客以静态资源方式部署</h3>
 
-<p>如果博客文章写好了，想将博客文章打包成静态资源结合Web服务器进行发布，例如使用<code class="language-plaintext highlighter-rouge">Nginx</code>或者<code class="language-plaintext highlighter-rouge">Github Pages</code>进行部署。</p>
+<p>博客文章写完，想将博客打包成静态资源部署到Web服务器上，例如使用<code class="language-plaintext highlighter-rouge">Nginx</code>或者<code class="language-plaintext highlighter-rouge">Github Pages</code>进行部署。</p>
 
 <ul>
   <li>进入博客代码根目录执行下面的指令，将博客打包成静态资源：</li>
@@ -226,7 +208,7 @@ Configuration file: /root/my_blog_site/_config.yml
 
 <p>运行完毕后，会在根目录下生成<code class="language-plaintext highlighter-rouge">_site</code>文件夹，这个文件夹就是我们的博客文章静态资源。直接将这个文件夹下的全部内容拷贝到<code class="language-plaintext highlighter-rouge">Nginx</code>的静态资源部署目录下，即可完成部署。</p>
 
-<p>或者你使用的是<code class="language-plaintext highlighter-rouge">Github Pages</code>，请参考官网的教程：<a href="https://pages.github.com">Github Pages</a>。</p>
+<p>或者你使用的是<code class="language-plaintext highlighter-rouge">Github Pages</code>，请移步Github官网教程：<a href="https://pages.github.com" target="_blank">Github Pages</a>。</p>
 
 <hr />
 
@@ -236,6 +218,6 @@ Configuration file: /root/my_blog_site/_config.yml
     </div>
   </body>
   <div class="footer">
-  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by ExSimple.</p>
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
 </div>
 </html>
