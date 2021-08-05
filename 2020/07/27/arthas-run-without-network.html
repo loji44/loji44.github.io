@@ -1,0 +1,96 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>无网络环境下使用阿里arthas诊断工具 | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>无网络环境下使用阿里arthas诊断工具</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/Java.html">#Java</a>
+      
+        <a class="extra" href="/tags/Arthas.html">#Arthas</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;27 July 2020&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p>最近排查一个线上问题，有个第三方公司服务启动后，访问的时候总是报数据库连接失败。由于是第三方服务，没法增加一些日志进行观察，所以使用阿里的arthas在线诊断工具进行排查。服务部署在客户的机房中，不允许连接外部网络，所以手动下载<code class="language-plaintext highlighter-rouge">arthas-boot.jar</code>并通过<code class="language-plaintext highlighter-rouge">scp</code>方式上传到目标机器的方式去运行。</p>
+
+<p>根据<a href="https://alibaba.github.io/arthas/install-detail.html" target="_blank">arthas官网安装教程</a>，下载<code class="language-plaintext highlighter-rouge">arthas-boot.jar</code>，然后<code class="language-plaintext highlighter-rouge">scp</code>上传到目标主机（客户的机器）：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-O</span> https://alibaba.github.io/arthas/arthas-boot.jar
+<span class="nv">$ </span>scp <span class="nt">-rp</span> arthas-boot.jar appweb@192.168.100.4:/appweb/
+</code></pre></div></div>
+
+<p>执行<code class="language-plaintext highlighter-rouge">java -jar arthas-boot.jar</code>，运行结果如下图所示：</p>
+
+<p><img src="/static/image/2020/arthas-run.png" alt="arthas-run" /></p>
+
+<p>原来<code class="language-plaintext highlighter-rouge">arthas-boot.jar</code>并不是全量包，它会在启动的时候先去阿里Maven仓库下载一些jar包依赖；如果Maven下载失败，那么它会检查本地是否有jar包依赖文件，例如图中的日志：</p>
+
+<p><code class="language-plaintext highlighter-rouge">[ERROR] Can not find Arthas under local: /root/.arthas/lib</code></p>
+
+<p>所以解决方案可以这样：在我的机器上（可联外网），先运行<code class="language-plaintext highlighter-rouge">java -jar arthas-boot.jar</code>下载得到一个<code class="language-plaintext highlighter-rouge">.arthars</code>文件夹，里面存放的就是arthas-boot.jar所需的一些jar包依赖。<code class="language-plaintext highlighter-rouge">.arthars</code>文件夹会默认在用户主目录下生成。</p>
+
+<p>最后将<code class="language-plaintext highlighter-rouge">.arthas</code>文件夹也<code class="language-plaintext highlighter-rouge">scp</code>传送到客户的目标机器，即可完成。</p>
+
+<hr />
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+</div>
+</html>

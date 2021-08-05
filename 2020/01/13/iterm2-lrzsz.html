@@ -1,0 +1,135 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Mac OS下iTerm2终端使用rz/sz进行远程文件的下载/上传 | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>Mac OS下iTerm2终端使用rz/sz进行远程文件的下载/上传</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/MacOS.html">#MacOS</a>
+      
+        <a class="extra" href="/tags/iTerm2.html">#iTerm2</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;13 January 2020&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p><img src="/static/image/2020-01/iterm2-logo2x.jpg" alt="iterm2-logo2x.jpg" /></p>
+
+<p>Mac OS下使用iTerm2终端时，经常会使用SSH方式登录到远程服务器，进行文件上传/下载操作。一般情况使用scp命令或者XFtp应用来直接上传/下载文件，但是如果远程服务器跟我们本地电脑之间隔了一层跳板机，scp和XFtp就不太好用了。作为替代方案，我们可以使用sz/rz命令来上传/下载文件。</p>
+
+<h3 id="1-安装lrzsz程序包">1. 安装lrzsz程序包</h3>
+
+<p>sz和rz命令是lrzsz程序包提供的两个命令，所以先安装lrzsz程序包。这里通过<a href="https://brew.sh">Homebrew</a>来安装lrzsz程序包，如果没有安装Homebrew，请先自行安装。</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>brew <span class="nb">install </span>lrzsz
+</code></pre></div></div>
+
+<h3 id="2-iterm2的相关配置脚本">2. iTerm2的相关配置脚本</h3>
+
+<p>先下载这两个脚本文件：<a href="/static/files/iterm2-send-zmodem.sh">iterm2-send-zmodem.sh</a> 和 <a href="/static/files/iterm2-recv-zmodem.sh">iterm2-recv-zmodem.sh</a></p>
+
+<p>将<code class="language-plaintext highlighter-rouge">iterm2-send-zmodem.sh</code>和<code class="language-plaintext highlighter-rouge">iterm2-recv-zmodem.sh</code>脚本放到<code class="language-plaintext highlighter-rouge">/usr/local/bin</code>目录下，并赋予可执行的权限：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">chmod</span> +x /usr/local/bin/iterm2-send-zmodem.sh /usr/local/bin/iterm2-recv-zmodem.sh
+</code></pre></div></div>
+
+<h3 id="3-配置iterm2">3. 配置iTerm2</h3>
+
+<p><em>找到iTerm2的配置项：iTerm2的Preferences -&gt; Profiles -&gt; Default -&gt; Advanced -&gt; Triggers</em></p>
+
+<p>点击Triggers的Edit按钮，按照以下表格进行配置：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Regular Expression</th>
+      <th style="text-align: left">Action</th>
+      <th style="text-align: left">Parameters</th>
+      <th style="text-align: left">Instant</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">rz waiting to receive.\*\*B0100</code></td>
+      <td style="text-align: left">Run Silent Coprocess</td>
+      <td style="text-align: left">/usr/local/bin/iterm2-send-zmodem.sh</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">checked</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">\*\*B00000000000000</code></td>
+      <td style="text-align: left">Run Silent Coprocess</td>
+      <td style="text-align: left">/usr/local/bin/iterm2-recv-zmodem.sh</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">checked</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>注意：最后一项Instant一定要勾选上！</strong> 如下图的配置：</p>
+
+<p><img src="/static/image/2020-01/iterm2-config.png" alt="iterm2-config.png" /></p>
+
+<hr />
+
+<p>参考：</p>
+<ul>
+  <li><a href="https://molunerfinn.com/iTerm2-lrzsz/#%E9%85%8D%E7%BD%AEiTerm2" target="_blank">https://molunerfinn.com/iTerm2-lrzsz/#%E9%85%8D%E7%BD%AEiTerm2</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+</div>
+</html>

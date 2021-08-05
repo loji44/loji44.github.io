@@ -1,0 +1,107 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Redis缓存雪崩/穿透/击穿 | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>Redis缓存雪崩/穿透/击穿</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/Redis.html">#Redis</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;30 July 2020&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <h3 id="1-redis缓存雪崩">1. Redis缓存雪崩</h3>
+
+<p>当缓存服务器宕机或者大量缓存key同时（或者说集中在某个时间段）过期了，大量的请求会在短时间内直接打到DB上，导致DB压力过大，严重的可能会造成DB挂掉。这种情况叫做缓存雪崩。</p>
+
+<p>针对Redis缓存雪崩，解决方案如下：</p>
+
+<ol>
+  <li>生产环境避免单机Redis，做集群高可用，主从+哨兵，Redis cluster，避免缓存全线崩盘。</li>
+  <li>Redis开启持久化，发生宕机重启之后快速恢复数据。</li>
+  <li>采用多级缓存：本地缓存 + hystrix限流&amp;降级，避免一级Redis缓存不可用导致DB被压垮。请求进来先查本地缓存，本地缓存没命中再查Redis，两级缓存都没有再查DB。同时还可以针对服务接口能力做限流&amp;降级处理，如果请求QPS超过了服务接口本身所能承受的数量，走服务降级，例如直接返回一些默认值、友好提示或者空白页面等。</li>
+  <li>针对大量缓存key同时过期的情况，简单的做法就是在每个key基础过期时间之上加一个随机值，例如1~5分钟的随机时间，让key的过期时间尽量分散。</li>
+</ol>
+
+<h3 id="2-redis缓存击穿">2. Redis缓存击穿</h3>
+
+<p>某个非常热点的key，访问非常频繁，处于高并发访问的情况。在这个key过期的瞬间，大量请求直接打到DB上造成DB压力很大。这种情况叫做缓存击穿。</p>
+
+<p>针对Redis缓存击穿，解决方案如下：</p>
+
+<ol>
+  <li>对load DB的操作加互斥锁（mutex），保证只有一个线程去查数据库并将数据更新到缓存中。其他请求进来，抢不到锁可以循环等待一段时间再重试。</li>
+  <li>热点数据设置永不过期。永不过期可以有两层意思：「物理」不过期，实际没有设置过期时间；「逻辑」不过期，redis设置某个key的时候不设置过期时间，但是会通过另一个timeKey来维护这个key的过期时间。每次查询key都会先查询timeKey，如果发现快过期或者已过期，就通过后台线程去更新这个value。这种做法可能会存在短暂的数据不一致，但是可以做得“很平滑”，不会阻塞用户请求，用户体验很好。</li>
+</ol>
+
+<h3 id="3-redis缓存穿透">3. Redis缓存穿透</h3>
+
+<p>缓存穿透是指请求一些一定不存在的key，请求会直接打到DB上。有些人利用这些系统中不存在的key进行恶意请求攻击。解决方案如下：</p>
+
+<ol>
+  <li>采用布隆过滤器对系统中所有数据哈希到一个足够大的bitmap中，Redis的bitmap数据结构就很合适。请求进来会先经过布隆过滤器，过滤掉一些恶意请求。</li>
+  <li>采用空值缓存：如果缓存没命中，再去查询DB，DB也没命中说明数据库中不存在这条数据。这时可以构建一个空值保存到缓存中，设置一个较小的过期时间（例如5分钟），这样可以有效过滤恶意请求，保护DB。</li>
+</ol>
+
+<hr />
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+</div>
+</html>
