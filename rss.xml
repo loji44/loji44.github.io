@@ -4,8 +4,8 @@
   <title>Blog · Loji44</title>
   <link>https://loji44.github.io</link>
   <language>zh-CN</language>
-  <pubDate>Sun, 16 Jan 2022 14:33:56 +0000</pubDate>
-  <lastBuildDate>Sun, 16 Jan 2022 14:33:56 +0000</lastBuildDate>
+  <pubDate>Sun, 16 Jan 2022 14:41:04 +0000</pubDate>
+  <lastBuildDate>Sun, 16 Jan 2022 14:41:04 +0000</lastBuildDate>
   <generator>Jekyll v4.2.1</generator>
   <atom:link href="https://loji44.github.io/rss.xml" rel="self" type="application/rss+xml" />
 
@@ -1406,7 +1406,7 @@ systemd─┬─AliYunDun───23<span class="k">*</span><span class="o">[{</
     </item>
   
     <item>
-      <title>图片在线处理工具集合</title>
+      <title>图片在线处理工具</title>
       <link>/2020/01/10/pict-tools.html</link>
       <content><h3 id="1-图片压缩工具">1. 图片压缩工具</h3>
 
