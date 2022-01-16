@@ -10,13 +10,14 @@
   <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
   <meta name="viewport" content="width=device-width" />
   <link href="/favicon.png" rel="icon" />
-  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
   <link rel="stylesheet" href="/static/css/github.css" />
   <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/search.css" />
 
   <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
   <script type="text/javascript" src="/static/js/is.min.js"></script>
   <script type="text/javascript" src="/static/js/main.js"></script>
+  <script type="text/javascript" src="/static/js/search.js" defer="true"></script>
 </head>
   <body>
     <div id="container">
@@ -34,7 +35,7 @@
   
     
     
-    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+    &#47;&nbsp;<a class="extra" href="/rss.xml">RSS</a>
   
     
     
@@ -83,11 +84,11 @@
 
 <p>假设有一个Service：打印机服务应用，对用户提供打印服务。这个打印机服务应用很强大，可以做到适配任何厂家的打印设备，因为这个打印服务应用在设计的时候考虑到了可扩展性。</p>
 
-<p>这个打印服务应用定义的一个标准SPI接口：<code class="language-plaintext highlighter-rouge">com.pandaq.spi.PrinterService</code>，这个接口会以jar包的方式对外发布。</p>
+<p>这个打印服务应用定义的一个标准SPI接口：<code class="language-plaintext highlighter-rouge">com.loji44.spi.Printer</code>，这个接口会以jar包的方式对外发布。</p>
 
-<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.pandaq.spi</span><span class="o">;</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.loji44.spi</span><span class="o">;</span>
 
-<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">PrinterService</span> <span class="o">{</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Printer</span> <span class="o">{</span>
     <span class="nc">String</span> <span class="nf">print</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">);</span>
 <span class="o">}</span>
 </code></pre></div></div>
@@ -95,9 +96,9 @@
 <p>然后有一个打印机设备厂商佳能引入这个jar包依赖，并提供自己的实现：</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.canon.printer</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.pandaq.spi.PrinterService</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.loji44.spi.Printer</span><span class="o">;</span>
 
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CanonPrinter</span> <span class="kd">implements</span> <span class="nc">PrinterService</span> <span class="o">{</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CanonPrinter</span> <span class="kd">implements</span> <span class="nc">Printer</span> <span class="o">{</span>
     <span class="nd">@Override</span>
     <span class="kd">public</span> <span class="nc">String</span> <span class="nf">print</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
         <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"佳能打印机为您服务："</span> <span class="o">+</span> <span class="n">text</span><span class="o">);</span>
@@ -122,12 +123,12 @@
 <p>引入了佳能厂商提供的实现jar包依赖之后，就可以加载并使用佳能打印设备提供的打印服务了：</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.util.ServiceLoader</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.pandaq.spi.PrinterService</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.loji44.spi.Printer</span><span class="o">;</span>
 
 <span class="c1">// 我是打印机服务应用，这里是启动打印服务的入口</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">PrinterLauncher</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
-        <span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="nc">PrinterService</span><span class="o">&gt;</span> <span class="n">serviceLoader</span> <span class="o">=</span> <span class="nc">ServiceLoader</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="nc">PrinterService</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="nc">Printer</span><span class="o">&gt;</span> <span class="n">serviceLoader</span> <span class="o">=</span> <span class="nc">ServiceLoader</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="nc">Printer</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
         <span class="n">serviceLoader</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="n">printer</span> <span class="o">-&gt;</span> <span class="o">{</span>
             <span class="n">printer</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="s">"我要打印很多钱"</span><span class="o">);</span>
         <span class="o">});</span>
@@ -146,7 +147,7 @@
 
 <p>在上一节中，我们通过以下几行代码就可以发现、加载并使用服务提供商提供的SPI实现：</p>
 
-<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="nc">PrinterService</span><span class="o">&gt;</span> <span class="n">serviceLoader</span> <span class="o">=</span> <span class="nc">ServiceLoader</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="nc">PrinterService</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="nc">Printer</span><span class="o">&gt;</span> <span class="n">serviceLoader</span> <span class="o">=</span> <span class="nc">ServiceLoader</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="nc">Printer</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
 <span class="n">serviceLoader</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="n">printer</span> <span class="o">-&gt;</span> <span class="o">{</span>
     <span class="n">printer</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="s">"我要打印很多钱"</span><span class="o">);</span>
 <span class="o">});</span>
@@ -155,7 +156,7 @@
 <p>没错，Java SPI服务提供商提供的实现是通过<code class="language-plaintext highlighter-rouge">java.util.ServiceLoader</code>这个类来完成查找、加载并使用的。我们来看看它是如何查找并加载SPI实现类的：</p>
 
 <ul>
-  <li>ServiceLoader.load(PrinterService.class)</li>
+  <li>ServiceLoader.load(Printer.class)</li>
 </ul>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="o">&lt;</span><span class="no">S</span><span class="o">&gt;</span> <span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="no">S</span><span class="o">&gt;</span> <span class="nf">load</span><span class="o">(</span><span class="nc">Class</span><span class="o">&lt;</span><span class="no">S</span><span class="o">&gt;</span> <span class="n">service</span><span class="o">)</span> <span class="o">{</span>
@@ -203,7 +204,7 @@
 <p>来看看ServiceLoader的私有构造器：</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="no">S</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="nc">Iterable</span><span class="o">&lt;</span><span class="no">S</span><span class="o">&gt;</span> <span class="o">{</span>
-    <span class="c1">// 将要被加载的SPI接口类的Class对象，例如 PrinterService.class</span>
+    <span class="c1">// 将要被加载的SPI接口类的Class对象，例如 Printer.class</span>
     <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Class</span><span class="o">&lt;</span><span class="no">S</span><span class="o">&gt;</span> <span class="n">service</span><span class="o">;</span>
     <span class="c1">// 用于加载SPI服务提供商提供的实现类的类加载器</span>
     <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ClassLoader</span> <span class="n">loader</span><span class="o">;</span>
@@ -241,7 +242,7 @@
 
 <p>答案是在使用的时候才进行实现类的加载：</p>
 
-<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="nc">PrinterService</span><span class="o">&gt;</span> <span class="n">serviceLoader</span> <span class="o">=</span> <span class="nc">ServiceLoader</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="nc">PrinterService</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">ServiceLoader</span><span class="o">&lt;</span><span class="nc">Printer</span><span class="o">&gt;</span> <span class="n">serviceLoader</span> <span class="o">=</span> <span class="nc">ServiceLoader</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="nc">Printer</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
 <span class="n">serviceLoader</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="n">printer</span> <span class="o">-&gt;</span> <span class="o">{</span>
     <span class="n">printer</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="s">"我要打印很多钱"</span><span class="o">);</span>
 <span class="o">});</span>
@@ -291,7 +292,7 @@
         <span class="k">if</span> <span class="o">(</span><span class="n">configs</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
             <span class="k">try</span> <span class="o">{</span>
                 <span class="c1">// 这里的PREFIX就是 "META-INF/services/"</span>
-                <span class="c1">// fullName在这里就是 "META-INF/services/com.pandaq.spi.PrinterService"</span>
+                <span class="c1">// fullName在这里就是 "META-INF/services/com.loji44.spi.Printer"</span>
                 <span class="nc">String</span> <span class="n">fullName</span> <span class="o">=</span> <span class="no">PREFIX</span> <span class="o">+</span> <span class="n">service</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
                 <span class="k">if</span> <span class="o">(</span><span class="n">loader</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
                     <span class="n">configs</span> <span class="o">=</span> <span class="nc">ClassLoader</span><span class="o">.</span><span class="na">getSystemResources</span><span class="o">(</span><span class="n">fullName</span><span class="o">);</span>
@@ -307,7 +308,7 @@
             <span class="k">if</span> <span class="o">(!</span><span class="n">configs</span><span class="o">.</span><span class="na">hasMoreElements</span><span class="o">())</span> <span class="o">{</span>
                 <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
             <span class="o">}</span>
-            <span class="c1">// 逐行解析 com.pandaq.spi.PrinterService 文件内容</span>
+            <span class="c1">// 逐行解析 com.loji44.spi.Printer 文件内容</span>
             <span class="n">pending</span> <span class="o">=</span> <span class="n">parse</span><span class="o">(</span><span class="n">service</span><span class="o">,</span> <span class="n">configs</span><span class="o">.</span><span class="na">nextElement</span><span class="o">());</span>
         <span class="o">}</span>
         <span class="c1">// 文件中每一行内容就是一个实现类的全限定名</span>
@@ -389,6 +390,6 @@
     </div>
   </body>
   <div class="footer">
-  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+  <p>Copyright © 2021-2022&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
 </div>
 </html>

@@ -10,13 +10,14 @@
   <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
   <meta name="viewport" content="width=device-width" />
   <link href="/favicon.png" rel="icon" />
-  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
   <link rel="stylesheet" href="/static/css/github.css" />
   <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/search.css" />
 
   <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
   <script type="text/javascript" src="/static/js/is.min.js"></script>
   <script type="text/javascript" src="/static/js/main.js"></script>
+  <script type="text/javascript" src="/static/js/search.js" defer="true"></script>
 </head>
   <body>
     <div id="container">
@@ -34,7 +35,7 @@
   
     
     
-    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+    &#47;&nbsp;<a class="extra" href="/rss.xml">RSS</a>
   
     
     
@@ -103,7 +104,7 @@
 
 <p>因为createOrder上有<code class="language-plaintext highlighter-rouge">@Transactional</code>注解，所以Spring在代理类中对这个方法进行了增强：在反射调用invoke进行<code class="language-plaintext highlighter-rouge">try...catch</code>，并在catch到异常的时候进行数据库<code class="language-plaintext highlighter-rouge">ROLLBACK</code>操作。</p>
 
-<p>所以Spring事务的是否生效，取决于我们是否是通过「代理类的对象实例」来进行方法的调用。例如最上面提到的例子，直接在createDefaultSob方法中调用了save这个事务方法，这种调用方式是不会走代理调用的，所以事务也根本不会生效。我们应该通过<code class="language-plaintext highlighter-rouge">xxxService.method</code>这种调用方式，才能使事务生效：</p>
+<p>所以Spring事务的是否生效，取决于我们是否是通过「代理类的对象实例」来进行方法的调用。例如最上面提到的例子，直接在<code class="language-plaintext highlighter-rouge">func</code>方法中调用了事务方法<code class="language-plaintext highlighter-rouge">save</code>，这种调用方式是不会走代理调用的，所以事务也根本不会生效。我们应该通过<code class="language-plaintext highlighter-rouge">xxxService.method</code>这种调用方式，才能使事务生效：</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderServiceImpl</span> <span class="kd">implements</span> <span class="nc">OrderService</span> <span class="o">{</span>
@@ -192,6 +193,6 @@
     </div>
   </body>
   <div class="footer">
-  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+  <p>Copyright © 2021-2022&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
 </div>
 </html>

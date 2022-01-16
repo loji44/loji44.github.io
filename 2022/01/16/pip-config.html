@@ -1,0 +1,100 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>pip/pip3配置国内源，为Python包的安装加速 | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/search.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+  <script type="text/javascript" src="/static/js/search.js" defer="true"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/rss.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>pip/pip3配置国内源，为Python包的安装加速</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/Python.html">#Python</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;16 January 2022&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p><code class="language-plaintext highlighter-rouge">midkr ~/.pip &amp;&amp; vim ~/.pip/pip.conf</code>编辑pip配置文件，加入以下内容：</p>
+
+<pre><code class="language-txt">[global]
+timeout=60
+index-url=https://pypi.tuna.tsinghua.edu.cn/simple
+</code></pre>
+<p>更多配置项可以参考官网配置说明：<a href="https://pip.pypa.io/en/stable/topics/configuration" target="_blank">https://pip.pypa.io/en/stable/topics/configuration</a></p>
+
+<p>国内可选pip源：</p>
+
+<ul>
+  <li>清华大学镜像：<a href="https://pypi.tuna.tsinghua.edu.cn/simple" target="_blank">https://pypi.tuna.tsinghua.edu.cn/simple</a></li>
+  <li>阿里云源：<a href="http://mirrors.aliyun.com/pypi/simple" target="_blank">http://mirrors.aliyun.com/pypi/simple</a></li>
+  <li>豆瓣软件源：<a href="http://pypi.douban.com/simple" target="blank">http://pypi.douban.com/simple<a></a></a></li>
+  <li>中国科技大学 <a href="https://pypi.mirrors.ustc.edu.cn/simple" target="_blank">https://pypi.mirrors.ustc.edu.cn/simple</a></li>
+  <li>华中理工大学：<a href="http://pypi.hustunique.com" target="_blank">http://pypi.hustunique.com</a></li>
+  <li>山东理工大学：<a href="http://pypi.sdutlinux.org" target="_blank">http://pypi.sdutlinux.org</a></li>
+</ul>
+
+<hr />
+
+<p>参考：</p>
+<ul>
+  <li><a href="https://pip.pypa.io/en/stable/topics/configuration" target="_blank">https://pip.pypa.io/en/stable/topics/configuration</a></li>
+  <li><a href="https://mirrors.tuna.tsinghua.edu.cn/help/pypi/" target="_blank">清华大学开源软件镜像站：pypi 镜像使用帮助</a></li>
+</ul>
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2022&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+</div>
+</html>

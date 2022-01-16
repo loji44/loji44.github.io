@@ -114,6 +114,13 @@ hr {
 
 .page_header.page_meta.page_meta_tags a.extra:hover { border-bottom: 1px dashed #999; }
 
+.page_meta_tags a:hover {
+  border-bottom: 1px dashed #999;
+}
+
+.footer a:hover {
+  border-bottom: 1px dashed #999;
+}
 
 /*****************************************************************************/
 /* Site

@@ -10,13 +10,14 @@
   <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
   <meta name="viewport" content="width=device-width" />
   <link href="/favicon.png" rel="icon" />
-  <link rel="alternate" type="application/rss+xml" title="Blog · Loji44" href="https://loji44.github.io/feed.xml" />
   <link rel="stylesheet" href="/static/css/github.css" />
   <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/search.css" />
 
   <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
   <script type="text/javascript" src="/static/js/is.min.js"></script>
   <script type="text/javascript" src="/static/js/main.js"></script>
+  <script type="text/javascript" src="/static/js/search.js" defer="true"></script>
 </head>
   <body>
     <div id="container">
@@ -34,7 +35,7 @@
   
     
     
-    &#47;&nbsp;<a class="extra" href="/feed.xml">RSS</a>
+    &#47;&nbsp;<a class="extra" href="/rss.xml">RSS</a>
   
     
     
@@ -70,7 +71,7 @@
   <li>配置ExSimple作为博客主题</li>
 </ul>
 
-<h3 id="1-安装jekyll博客开发环境">1. 安装Jekyll博客开发环境</h3>
+<h3 id="一安装jekyll博客开发环境">一、安装Jekyll博客开发环境</h3>
 <p>Jekyll依赖Ruby语言环境，所以要先安装Ruby。我自己电脑(MacOS)本身自带了Ruby，版本为：</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ruby <span class="nt">-v</span>
@@ -129,7 +130,7 @@ ruby 2.6.3p62 <span class="o">(</span>2019-04-16 revision 67580<span class="o">)
 
 <p>这个安装过程可能会有点耗时，请耐心等待安装Jekyll完成 …</p>
 
-<h3 id="2-配置exsimple作为博客主题">2. 配置ExSimple作为博客主题</h3>
+<h3 id="二配置exsimple作为博客主题">二、配置ExSimple作为博客主题</h3>
 
 <p>至此，Jekyll开发环境搭建好了。现在来配置ExSimple作为博客主题。</p>
 
@@ -195,7 +196,7 @@ Configuration file: /root/your_blog/_config.yml
 
 <p>使用<code class="language-plaintext highlighter-rouge">jekyll serve -h</code>来查看Jekyll启动服务时支持的其他启动参数。</p>
 
-<h3 id="3-将jekyll博客以静态资源方式部署">3. 将Jekyll博客以静态资源方式部署</h3>
+<h3 id="三将jekyll博客以静态资源方式部署">三、将Jekyll博客以静态资源方式部署</h3>
 
 <p>博客文章写完，想将博客打包成静态资源部署到Web服务器上，例如使用<code class="language-plaintext highlighter-rouge">Nginx</code>或者<code class="language-plaintext highlighter-rouge">Github Pages</code>进行部署。</p>
 
@@ -218,6 +219,6 @@ Configuration file: /root/your_blog/_config.yml
     </div>
   </body>
   <div class="footer">
-  <p>Copyright © 2021-2021&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+  <p>Copyright © 2021-2022&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
 </div>
 </html>

@@ -1,0 +1,89 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Windows迟滞键后门sethc.exe | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/search.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+  <script type="text/javascript" src="/static/js/search.js" defer="true"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/rss.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>Windows迟滞键后门sethc.exe</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/Windows.html">#Windows</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;17 August 2021&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p><code class="language-plaintext highlighter-rouge">sethc.exe</code>是Windows的迟滞键执行程序，即连续按下5次<code class="language-plaintext highlighter-rouge">shift</code>键之后，会弹出迟滞键弹窗：</p>
+
+<p><img src="/static/image/2021/shift5.jpg" alt="shift5.jpg" /></p>
+
+<p>这个迟滞键往往会被利用进行一些不安全的入侵操作，例如修改登录密码。利用“启动修复”功能，就可以将<code class="language-plaintext highlighter-rouge">cmd.exe</code>命令控制台程序替换成<code class="language-plaintext highlighter-rouge">sethc.exe</code>，这样在登录窗口就可以连续按下5次<code class="language-plaintext highlighter-rouge">shift</code>键，调出命令控制台，继而通过<code class="language-plaintext highlighter-rouge">net user new_pass</code>修改用户登录密码。</p>
+
+<p>这类后门的原理是通过将<code class="language-plaintext highlighter-rouge">cmd.exe</code>重命名成其他快捷键等方式执行程序，例如上述例子说的，将<code class="language-plaintext highlighter-rouge">cmd.exe</code>重命名成<code class="language-plaintext highlighter-rouge">sethc.exe</code>来欺骗操作系统，调出命令控制台进而修改登录密码。所以应对方式就是禁用或者对一些快捷键进行权限配置，可以参考：<a href="https://baike.baidu.com/item/sethc.exe/249570" target="_blank">https://baike.baidu.com/item/sethc.exe/249570</a></p>
+
+<hr />
+
+<p>延伸阅读：<a href="https://www.zhihu.com/question/29748629/answer/646431616" target="_blank">迟滞键是谁发明的？</a> 这里摘抄一部分：</p>
+
+<p>“粘滞键是80年代初发明的，当时叫 1-Finger，顾名思义初衷是帮助只有「一根手指」的用户。比如键入「@」，需要同时按住 Shift 和 2，这时候粘滞键就可以起作用了。当然，这个功能帮助到的人群远不止「一根手指」。有个天生双臂缺失的大爷给我演示过，他是怎么用电脑的，粘滞键发明前他是怎么解决 Ctrl Shift 这些功能键的：他嘴里咬一根木棍儿，一头缠几圈橡皮筋——这是他操作电脑唯一的工具；然后他让家人帮他把5个一美分硬币摞在一起，用透明胶缠住，一坨硬币的一面再缠上一个小铁环，让木棍儿的橡皮头刚好可以穿过。需要按住 Shift 的时候，用木棍儿把一坨硬币吊到 Shift 上，重量刚好可以把键按下，再去按别的键，用完再把硬币吊走。”</p>
+
+<hr />
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2022&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+</div>
+</html>

@@ -1,0 +1,156 @@
+<!-- 文章内容布局页 -->
+<!DOCTYPE html>
+<html lang="en">
+  <!-- head.html存放页面通用的元数据、css、js等链接资源 -->
+<head>
+  <meta name="generator" content="Hugo 0.79.1" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>树莓派4B上使用Docker安装MySQL | Blog · Loji44</title>
+  <meta name="description" content="Loji44&#39;s Blog. Focus on Java, Linux, Golang, Git, Vim, Docker, etc." />
+  <meta name="viewport" content="width=device-width" />
+  <link href="/favicon.png" rel="icon" />
+  <link rel="stylesheet" href="/static/css/github.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/search.css" />
+
+  <script src="//cdn.staticfile.org/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/is.min.js"></script>
+  <script type="text/javascript" src="/static/js/main.js"></script>
+  <script type="text/javascript" src="/static/js/search.js" defer="true"></script>
+</head>
+  <body>
+    <div id="container">
+      <!-- 全局顶部导航栏 -->
+<div class="header">
+  <span class="title"><a href="/">Blog · Loji44</a></span>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/about.html">About</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/tags.html">TAGS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/rss.xml">RSS</a>
+  
+    
+    
+    &#47;&nbsp;<a class="extra" href="/search.html">🔍SEARCH</a>
+  
+</div>
+      <div class="site">
+        <!-- post文章的标题部分 -->
+<div id="page_header">
+  <div id="page_title">
+    <h1>树莓派4B上使用Docker安装MySQL</h1>
+  </div>
+  <div id="page_meta">
+    <span class="page_meta_tags">
+      &#91;&nbsp;
+      
+        <a class="extra" href="/tags/树莓派.html">#树莓派</a>
+      
+        <a class="extra" href="/tags/MySQL.html">#MySQL</a>
+      
+        <a class="extra" href="/tags/Docker.html">#Docker</a>
+      
+      &nbsp;&#93;
+    </span>
+    <span class="page_meta_date">
+        &#91;&nbsp;06 January 2022&nbsp;&#93;
+    </span>
+  </div>
+</div>
+        <div class="post">
+          <p>树莓派4B属于ARM架构，想要在上面安装MySQL，必须选择适配ARM平台的MySQL Docker镜像。MySQL官方出了一个可以在ARM平台上运行的镜像：<a href="https://registry.hub.docker.com/r/mysql/mysql-server" target="_blank">https://registry.hub.docker.com/r/mysql/mysql-server</a></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker pull mysql/mysql-server:8.0.27-aarch64
+</code></pre></div></div>
+
+<p>这里使用Docker-compose运行，编辑<code class="language-plaintext highlighter-rouge">docker-compose.yaml</code>内容如下：</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">3"</span>
+<span class="na">services</span><span class="pi">:</span>
+  <span class="na">mysql-server</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">mysql/mysql-server:8.0.27-aarch64</span>
+    <span class="na">container_name</span><span class="pi">:</span> <span class="s">mysql-server</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">3306:3306"</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">MYSQL_ROOT_PASSWORD</span><span class="pi">:</span> <span class="s">root_pass</span>
+    <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">/xxx/docker/volumes/mysql-server/data:/var/lib/mysql"</span>
+    <span class="na">restart</span><span class="pi">:</span> <span class="s">always</span>
+</code></pre></div></div>
+
+<p>启动MySQL docker容器：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker-compose up <span class="nt">-d</span> mysql-server
+</code></pre></div></div>
+
+<p>使用命令<code class="language-plaintext highlighter-rouge">docker logs -f mysql-server</code>查看MySQL服务器日志，看到<code class="language-plaintext highlighter-rouge">ready for connections</code>字样就说明成功运行起来了。MySQL默认仅支持本地<code class="language-plaintext highlighter-rouge">localhost</code>连接，需要设置MySQL开启支持远程连接，步骤如下。</p>
+
+<p>执行<code class="language-plaintext highlighter-rouge">docker exec -ti mysql-server bash</code>命令进入MySQL容器中，然后使用<code class="language-plaintext highlighter-rouge">mysql</code>命令连接MySQL：<code class="language-plaintext highlighter-rouge">mysql -h localhost -P 3306 -u root -proot_pass</code>。成功连接上后，给root用户授权远程连接：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mysql&gt; USE mysql<span class="p">;</span>
+Reading table information <span class="k">for </span>completion of table and column names
+You can turn off this feature to get a quicker startup with <span class="nt">-A</span>
+
+Database changed
+mysql&gt; SELECT user, host FROM user<span class="p">;</span>
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| healthchecker    | localhost |
+| mysql.infoschema | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
+| root             | localhost |
++------------------+-----------+
+5 rows <span class="k">in </span><span class="nb">set</span> <span class="o">(</span>0.00 sec<span class="o">)</span>
+
+mysql&gt; UPDATE user SET <span class="nv">host</span><span class="o">=</span><span class="s1">'%'</span> WHERE user <span class="o">=</span> <span class="s1">'root'</span><span class="p">;</span>
+Query OK, 1 row affected <span class="o">(</span>0.02 sec<span class="o">)</span>
+
+mysql&gt; SELECT user, host FROM user<span class="p">;</span>
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| root             | %         |
+| healthchecker    | localhost |
+| mysql.infoschema | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
++------------------+-----------+
+5 rows <span class="k">in </span><span class="nb">set</span> <span class="o">(</span>0.01 sec<span class="o">)</span>
+
+mysql&gt; FLUSH PRIVILEGES<span class="p">;</span>
+Query OK, 0 rows affected <span class="o">(</span>0.02 sec<span class="o">)</span>
+</code></pre></div></div>
+
+<p>成功执行<code class="language-plaintext highlighter-rouge">UPDATE user SET host='%' WHERE user = 'root';</code>之后记得执行<code class="language-plaintext highlighter-rouge">FLUSH PRIVILEGES;</code>刷新权限！</p>
+
+<p>MySQL8之后，用户管理和权限管理跟之前版本命令的使用方式有所不同，参考官方说明：<a href="https://dev.mysql.com/doc/refman/8.0/en/grant.html" target="_blank">https://dev.mysql.com/doc/refman/8.0/en/grant.html</a></p>
+
+<hr />
+
+<p>参考：</p>
+
+<ul>
+  <li><a href="https://dev.mysql.com/doc/refman/8.0/en/grant.html" target="_blank">https://dev.mysql.com/doc/refman/8.0/en/grant.html</a></li>
+  <li><a href="https://www.cnblogs.com/dongxt/p/14883465.html" target="_blank">MySQL8.0以上版本创建用户并授权远程连接</a></li>
+</ul>
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  <div class="footer">
+  <p>Copyright © 2021-2022&nbsp;|&nbsp;Powered by <a href="http://jekyllcn.com" target="_blank">Jekyll</a>. Theme by <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a>.</p>
+</div>
+</html>
