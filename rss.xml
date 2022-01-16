@@ -4,8 +4,8 @@
   <title>Blog · Loji44</title>
   <link>https://loji44.github.io</link>
   <language>zh-CN</language>
-  <pubDate>Sun, 16 Jan 2022 13:40:16 +0000</pubDate>
-  <lastBuildDate>Sun, 16 Jan 2022 13:40:16 +0000</lastBuildDate>
+  <pubDate>Sun, 16 Jan 2022 14:19:48 +0000</pubDate>
+  <lastBuildDate>Sun, 16 Jan 2022 14:19:48 +0000</lastBuildDate>
   <generator>Jekyll v4.2.1</generator>
   <atom:link href="https://loji44.github.io/rss.xml" rel="self" type="application/rss+xml" />
 
@@ -157,11 +157,47 @@ Query OK, 0 rows affected <span class="o">(</span>0.02 sec<span class="o">)</spa
     </item>
   
     <item>
-      <title>使用Jekyll插件(jekyll-archives)自动生成页面</title>
+      <title>使用jekyll-archives插件自动生成文章归档页面</title>
       <link>/2021/08/05/jekyll-archives-plugin.html</link>
       <content><p>在做 <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a> 博客主题的时候，被一个问题困扰了一天：如何自动根据标签<code class="language-plaintext highlighter-rouge">tag</code>自动生成页面，因为写文章的时候会随时新增新的标签。我如何能在新增<code class="language-plaintext highlighter-rouge">tag</code>的时候，自动生成<code class="language-plaintext highlighter-rouge">tag</code>下面的所有文章列表页面？</p>
 
-<p>首先我已经写了<code class="language-plaintext highlighter-rouge">tag_post_list.html</code>这个layout，用于展示某个tag下面所有的文章列表。</p>
+<p>首先我已经写了<code class="language-plaintext highlighter-rouge">tag_post_list.html</code>这个layout，结合<a href="https://github.com/jekyll/jekyll-archives" target="https://github.com/jekyll/jekyll-archives">jekyll-archives</a>插件自动根据tag生成文章归档页面。<code class="language-plaintext highlighter-rouge">_config.yml</code>配置如下：</p>
+
+<pre><code class="language-txt">plugins:
+  - jekyll-archives
+jekyll-archives:
+  enabled: ['tags']
+  layout: tag_post_list
+  permalinks:
+    tag: '/tags/:name.html'
+</code></pre>
+
+<p>在执行<code class="language-plaintext highlighter-rouge">bundle install &amp;&amp; jekyll build</code>生成博客静态资源文件时，就会根据tag归档生成归档页面，生成归档html页面所存放的路径为<code class="language-plaintext highlighter-rouge">_site/tags/</code>：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>loji44@Ubuntu:~/i44/_site/tags<span class="nv">$ </span>tree
+<span class="nb">.</span>
+├── arthas.html
+├── auth.html
+├── docker.html
+├── dubbo.html
+├── iterm2.html
+├── java.html
+├── jekyll.html
+├── linux.html
+├── macos.html
+├── mybatis.html
+├── mysql.html
+├── python.html
+├── redis.html
+├── spi.html
+├── spring.html
+├── sso.html
+├── windows.html
+├── 博客.html
+├── 图片.html
+├── 工具集.html
+└── 树莓派.html
+</code></pre></div></div>
 
 <hr />
 

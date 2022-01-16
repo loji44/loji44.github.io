@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.1">Jekyll</generator><link href="https://loji44.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://loji44.github.io/" rel="alternate" type="text/html" /><updated>2022-01-16T13:40:16+00:00</updated><id>https://loji44.github.io/feed.xml</id><title type="html">Blog · Loji44</title><entry><title type="html">pip/pip3配置国内源，为Python包的安装加速</title><link href="https://loji44.github.io/2022/01/16/pip-config.html" rel="alternate" type="text/html" title="pip/pip3配置国内源，为Python包的安装加速" /><published>2022-01-16T09:20:02+00:00</published><updated>2022-01-16T09:20:02+00:00</updated><id>https://loji44.github.io/2022/01/16/pip-config</id><content type="html" xml:base="https://loji44.github.io/2022/01/16/pip-config.html"><![CDATA[<p><code class="language-plaintext highlighter-rouge">midkr ~/.pip &amp;&amp; vim ~/.pip/pip.conf</code>编辑pip配置文件，加入以下内容：</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.1">Jekyll</generator><link href="https://loji44.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://loji44.github.io/" rel="alternate" type="text/html" /><updated>2022-01-16T14:19:48+00:00</updated><id>https://loji44.github.io/feed.xml</id><title type="html">Blog · Loji44</title><entry><title type="html">pip/pip3配置国内源，为Python包的安装加速</title><link href="https://loji44.github.io/2022/01/16/pip-config.html" rel="alternate" type="text/html" title="pip/pip3配置国内源，为Python包的安装加速" /><published>2022-01-16T09:20:02+00:00</published><updated>2022-01-16T09:20:02+00:00</updated><id>https://loji44.github.io/2022/01/16/pip-config</id><content type="html" xml:base="https://loji44.github.io/2022/01/16/pip-config.html"><![CDATA[<p><code class="language-plaintext highlighter-rouge">midkr ~/.pip &amp;&amp; vim ~/.pip/pip.conf</code>编辑pip配置文件，加入以下内容：</p>
 
 <pre><code class="language-txt">[global]
 timeout=60
@@ -114,9 +114,45 @@ Query OK, 0 rows affected <span class="o">(</span>0.02 sec<span class="o">)</spa
 
 <p>“粘滞键是80年代初发明的，当时叫 1-Finger，顾名思义初衷是帮助只有「一根手指」的用户。比如键入「@」，需要同时按住 Shift 和 2，这时候粘滞键就可以起作用了。当然，这个功能帮助到的人群远不止「一根手指」。有个天生双臂缺失的大爷给我演示过，他是怎么用电脑的，粘滞键发明前他是怎么解决 Ctrl Shift 这些功能键的：他嘴里咬一根木棍儿，一头缠几圈橡皮筋——这是他操作电脑唯一的工具；然后他让家人帮他把5个一美分硬币摞在一起，用透明胶缠住，一坨硬币的一面再缠上一个小铁环，让木棍儿的橡皮头刚好可以穿过。需要按住 Shift 的时候，用木棍儿把一坨硬币吊到 Shift 上，重量刚好可以把键按下，再去按别的键，用完再把硬币吊走。”</p>
 
-<hr />]]></content><author><name></name></author><category term="Windows" /><summary type="html"><![CDATA[sethc.exe是Windows的迟滞键执行程序，即连续按下5次shift键之后，会弹出迟滞键弹窗：]]></summary></entry><entry><title type="html">使用Jekyll插件(jekyll-archives)自动生成页面</title><link href="https://loji44.github.io/2021/08/05/jekyll-archives-plugin.html" rel="alternate" type="text/html" title="使用Jekyll插件(jekyll-archives)自动生成页面" /><published>2021-08-05T07:00:00+00:00</published><updated>2021-08-05T07:00:00+00:00</updated><id>https://loji44.github.io/2021/08/05/jekyll-archives-plugin</id><content type="html" xml:base="https://loji44.github.io/2021/08/05/jekyll-archives-plugin.html"><![CDATA[<p>在做 <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a> 博客主题的时候，被一个问题困扰了一天：如何自动根据标签<code class="language-plaintext highlighter-rouge">tag</code>自动生成页面，因为写文章的时候会随时新增新的标签。我如何能在新增<code class="language-plaintext highlighter-rouge">tag</code>的时候，自动生成<code class="language-plaintext highlighter-rouge">tag</code>下面的所有文章列表页面？</p>
+<hr />]]></content><author><name></name></author><category term="Windows" /><summary type="html"><![CDATA[sethc.exe是Windows的迟滞键执行程序，即连续按下5次shift键之后，会弹出迟滞键弹窗：]]></summary></entry><entry><title type="html">使用jekyll-archives插件自动生成文章归档页面</title><link href="https://loji44.github.io/2021/08/05/jekyll-archives-plugin.html" rel="alternate" type="text/html" title="使用jekyll-archives插件自动生成文章归档页面" /><published>2021-08-05T07:00:00+00:00</published><updated>2021-08-05T07:00:00+00:00</updated><id>https://loji44.github.io/2021/08/05/jekyll-archives-plugin</id><content type="html" xml:base="https://loji44.github.io/2021/08/05/jekyll-archives-plugin.html"><![CDATA[<p>在做 <a href="https://github.com/loji44/ExSimple" target="_blank">ExSimple</a> 博客主题的时候，被一个问题困扰了一天：如何自动根据标签<code class="language-plaintext highlighter-rouge">tag</code>自动生成页面，因为写文章的时候会随时新增新的标签。我如何能在新增<code class="language-plaintext highlighter-rouge">tag</code>的时候，自动生成<code class="language-plaintext highlighter-rouge">tag</code>下面的所有文章列表页面？</p>
 
-<p>首先我已经写了<code class="language-plaintext highlighter-rouge">tag_post_list.html</code>这个layout，用于展示某个tag下面所有的文章列表。</p>
+<p>首先我已经写了<code class="language-plaintext highlighter-rouge">tag_post_list.html</code>这个layout，结合<a href="https://github.com/jekyll/jekyll-archives" target="https://github.com/jekyll/jekyll-archives">jekyll-archives</a>插件自动根据tag生成文章归档页面。<code class="language-plaintext highlighter-rouge">_config.yml</code>配置如下：</p>
+
+<pre><code class="language-txt">plugins:
+  - jekyll-archives
+jekyll-archives:
+  enabled: ['tags']
+  layout: tag_post_list
+  permalinks:
+    tag: '/tags/:name.html'
+</code></pre>
+
+<p>在执行<code class="language-plaintext highlighter-rouge">bundle install &amp;&amp; jekyll build</code>生成博客静态资源文件时，就会根据tag归档生成归档页面，生成归档html页面所存放的路径为<code class="language-plaintext highlighter-rouge">_site/tags/</code>：</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>loji44@Ubuntu:~/i44/_site/tags<span class="nv">$ </span>tree
+<span class="nb">.</span>
+├── arthas.html
+├── auth.html
+├── docker.html
+├── dubbo.html
+├── iterm2.html
+├── java.html
+├── jekyll.html
+├── linux.html
+├── macos.html
+├── mybatis.html
+├── mysql.html
+├── python.html
+├── redis.html
+├── spi.html
+├── spring.html
+├── sso.html
+├── windows.html
+├── 博客.html
+├── 图片.html
+├── 工具集.html
+└── 树莓派.html
+</code></pre></div></div>
 
 <hr />]]></content><author><name></name></author><category term="博客" /><category term="Jekyll" /><summary type="html"><![CDATA[在做 ExSimple 博客主题的时候，被一个问题困扰了一天：如何自动根据标签tag自动生成页面，因为写文章的时候会随时新增新的标签。我如何能在新增tag的时候，自动生成tag下面的所有文章列表页面？]]></summary></entry><entry><title type="html">Java运行时利用反射获取方法的参数名称</title><link href="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html" rel="alternate" type="text/html" title="Java运行时利用反射获取方法的参数名称" /><published>2021-01-04T08:55:34+00:00</published><updated>2021-01-04T08:55:34+00:00</updated><id>https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name</id><content type="html" xml:base="https://loji44.github.io/2021/01/04/java-reflection-get-method-parameter-real-name.html"><![CDATA[<p>JDK1.8之前，我们通过反射获取一个方法定义的参数名称时，无法获取到真实的参数名称，例如：</p>
 
