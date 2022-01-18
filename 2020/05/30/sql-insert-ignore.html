@@ -52,9 +52,7 @@
     <span class="page_meta_tags">
       &#91;&nbsp;
       
-        <!-- '/'和空格转换成'-'、tag英文转换成小写字母 -->
-        
-        <a class="extra" href="/tags/.html">#MySQL</a>
+        <a class="extra" href="/tags/MySQL.html">#MySQL</a>
       
       &nbsp;&#93;
     </span>
@@ -63,6 +61,7 @@
     </span>
   </div>
 </div>
+
         <div class="post">
           <p>开发中经常会一次性往一个里INSERT多条数据，但是当某条INSERT SQL因为与表中发生<strong>主键冲突</strong>，或者与某个定义为<code class="language-plaintext highlighter-rouge">UNIQUE KEY</code>的字段发生<code class="language-plaintext highlighter-rouge">Duplicate entry</code>错误时，MySQL会放弃执行后续的INSERT SQL。而我们希望如果某条INSERT发生了唯一性约束的错误，那么这条INSERT不插入数据即可，不要影响后面的其他INSERT语句的执行。</p>
 
